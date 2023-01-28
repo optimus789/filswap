@@ -312,7 +312,7 @@ const NETWORK_LABELS: { [chainId in ChainId]?: string } = {
   [ChainId.ROPSTEN]: 'Ropsten',
   [ChainId.GÖRLI]: 'Görli',
   [ChainId.KOVAN]: 'Kovan',
-  [ChainId.HYPERSPACE_TESTNET]: 'Filecoin Hyperspace Testnet'
+  [ChainId.HYPERSPACE_TESTNET]: 'Hyperspace Testnet'
 }
 
 enum SupportedChainId {
@@ -477,7 +477,7 @@ export default function Header() {
           })
           const nameofchain = getChainNameFromId(newtwork.chainId)
           // window.location.href = `https://app.moxieswap.com/#/swap?chain=${nameofchain}&outputCurrency=ETH`
-          window.location.href = `http://localhost:3000/#/swap?chain=${nameofchain}&outputCurrency=ETH`
+          window.location.href = `http://localhost:3000/#/swap?chain=${nameofchain}&outputCurrency=TFIL`
         } catch (addError) {
           // handle "add" error
           // history.replace({
@@ -596,7 +596,7 @@ export default function Header() {
               <CardNoise />
             </UNIWrapper>
           )}
-          {!availableClaim && aggregateBalance && (
+          {/* {!availableClaim && aggregateBalance && (
             <UNIWrapper onClick={() => setShowUniBalanceModal(true)}>
               <UNIAmount active={!!account && !availableClaim} style={{ pointerEvents: 'auto' }}>
                 {account && (
@@ -617,15 +617,15 @@ export default function Header() {
                     </TYPE.white>
                   </HideSmall>
                 )}
-                UNI
+                FIL
               </UNIAmount>
               <CardNoise />
             </UNIWrapper>
-          )}
+          )} */}
           <AccountElement active={!!account} style={{ pointerEvents: 'auto' }}>
             {account && userEthBalance ? (
               <BalanceText style={{ flexShrink: 0 }} pl="0.75rem" pr="0.5rem" fontWeight={500}>
-                {userEthBalance?.toSignificant(4)} ETH
+                {userEthBalance?.toSignificant(4)} TFIL
               </BalanceText>
             ) : null}
             <Web3Status />
