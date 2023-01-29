@@ -4,7 +4,7 @@ import styled from 'styled-components'
 import { useActiveWeb3React } from 'hooks'
 
 import EthereumLogo from '../../assets/images/ethereum-logo.png'
-import FILLogo from '../../assets/images/filecoin-fil-logo.png'
+import FILLogo from '../../assets/images/filecoin-fil-logo.webp'
 import useHttpLocations from '../../hooks/useHttpLocations'
 import { WrappedTokenInfo } from '../../state/lists/hooks'
 import Logo from '../Logo'
