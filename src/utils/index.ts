@@ -29,10 +29,10 @@ const ETHERSCAN_PREFIXES: { [chainId in ChainId]: string } = {
 export function getEtherscanLink(
   chainId: ChainId,
   data: string,
-  type: 'transaction' | 'token' | 'address' | 'block'
+  type: 'transaction' | 'token' | 'address' | 'block' | 'tipset'
 ): string {
   let prefix = `https://${ETHERSCAN_PREFIXES[chainId] || ETHERSCAN_PREFIXES[1]}etherscan.io`
-  if (chainId === ChainId.HYPERSPACE_TESTNET) prefix = `https://filfox.info/en/`
+  if (chainId === ChainId.HYPERSPACE_TESTNET) prefix = `https://filfox.info/en`
 
   switch (type) {
     case 'transaction': {
@@ -42,7 +42,8 @@ export function getEtherscanLink(
       return `${prefix}/token/${data}`
     }
     case 'block': {
-      return `${prefix}/block/${data}`
+      const blockVar = chainId === 3141 ? `${prefix}/tipset/${data}` : `${prefix}/block/${data}`
+      return blockVar
     }
     case 'address':
     default: {

@@ -13,7 +13,7 @@ export const nodes = {
 }
 
 const getNodeUrl = () => {
-  let chainId = '80001'
+  let chainId = '3141'
   if (window && window.ethereum) {
     chainId = window.ethereum.networkVersion
   }
