@@ -49,6 +49,9 @@ import { useIsTransactionUnsupported } from 'hooks/Trades'
 import UnsupportedCurrencyFooter from 'components/swap/UnsupportedCurrencyFooter'
 import { isTradeBetter } from 'utils/trades'
 
+import rubyLogo from '../../assets/images/ruby-logo.webp'
+import fileCoinLogo from '../../assets/images/filecoin-logo.png'
+
 export default function Swap() {
   const loadedUrlParams = useDefaultsFromURLSearch()
 
@@ -299,6 +302,9 @@ export default function Swap() {
         onConfirm={handleConfirmTokenWarning}
       />
       <SwapPoolTabs active={'swap'} />
+      <img src={rubyLogo} height="96" width={96} className="ruby" />
+      <img src={fileCoinLogo} height="96" width={96} className="fileCoin" />
+
       <AppBody>
         <SwapHeader />
         <Wrapper id="swap-page">

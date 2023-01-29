@@ -477,7 +477,7 @@ export default function Header() {
           })
           const nameofchain = getChainNameFromId(newtwork.chainId)
           // window.location.href = `https://app.moxieswap.com/#/swap?chain=${nameofchain}&outputCurrency=ETH`
-          window.location.href = `http://localhost:3000/#/swap?chain=${nameofchain}&outputCurrency=TFIL`
+          //window.location.href = `http://localhost:3000/#/swap?chain=${nameofchain}&outputCurrency=TFIL`
         } catch (addError) {
           // handle "add" error
           // history.replace({

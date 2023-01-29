@@ -20,7 +20,6 @@ var providers = require('@ethersproject/providers')
 var IUniswapV2Pair = _interopDefault(require('@uniswap/v2-core/build/IUniswapV2Pair.json'))
 
 var _SOLIDITY_TYPE_MAXIMA
-
 ;(function(ChainId) {
   ChainId[(ChainId['MAINNET'] = 1)] = 'MAINNET'
   ChainId[(ChainId['ROPSTEN'] = 3)] = 'ROPSTEN'
@@ -29,12 +28,10 @@ var _SOLIDITY_TYPE_MAXIMA
   ChainId[(ChainId['KOVAN'] = 42)] = 'KOVAN'
   ChainId[(ChainId['HYPERSPACE_TESTNET'] = 3141)] = 'HYPERSPACE_TESTNET'
 })(exports.ChainId || (exports.ChainId = {}))
-
 ;(function(TradeType) {
   TradeType[(TradeType['EXACT_INPUT'] = 0)] = 'EXACT_INPUT'
   TradeType[(TradeType['EXACT_OUTPUT'] = 1)] = 'EXACT_OUTPUT'
 })(exports.TradeType || (exports.TradeType = {}))
-
 ;(function(Rounding) {
   Rounding[(Rounding['ROUND_DOWN'] = 0)] = 'ROUND_DOWN'
   Rounding[(Rounding['ROUND_HALF_UP'] = 1)] = 'ROUND_HALF_UP'
@@ -55,7 +52,6 @@ var _100 = /*#__PURE__*/ JSBI.BigInt(100)
 var _997 = /*#__PURE__*/ JSBI.BigInt(997)
 var _1000 = /*#__PURE__*/ JSBI.BigInt(1000)
 var SolidityType
-
 ;(function(SolidityType) {
   SolidityType['uint8'] = 'uint8'
   SolidityType['uint256'] = 'uint256'
@@ -410,7 +406,7 @@ var Currency =
  * The only instance of the base class `Currency`.
  */
 
-Currency.ETHER = /*#__PURE__*/ new Currency(18, 'ETH', 'Ether')
+Currency.ETHER = /*#__PURE__*/ new Currency(18, 'TFIL', 'Testnet Filecoin')
 var ETHER = Currency.ETHER
 
 var _WETH

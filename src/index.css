@@ -1,0 +1,48 @@
+.ruby {
+  position: absolute;
+  bottom: 175px;
+  right: 430px;
+  filter: drop-shadow(0 0 0.5rem #37dea4);
+  will-change: filter;
+  transition: filter 0.2s ease-out;
+  animation: MoveUpDown 6s ease-in-out infinite;
+  rotate: 60deg;
+  opacity: 0.8;
+}
+@keyframes MoveUpDown {
+  0%,
+  100% {
+    bottom: 175px;
+    filter: drop-shadow(0 0 0.4rem #37dea49f);
+  }
+  50% {
+    bottom: 190px;
+    filter: drop-shadow(0 0 0.75rem #37dea49f);
+  }
+}
+
+.fileCoin {
+  opacity: 0.8;
+  position: absolute;
+  top: 175px;
+  left: 450px;
+  will-change: filter;
+  transition: filter 0.2s ease-out;
+  animation: MoveUpDown2 10s ease-in-out infinite;
+  scale: 1.2;
+  transform: skew(5deg) rotate(2deg);
+  -webkit-transform: skew(5deg) rotate(2deg);
+  -moz-transform: skew(5deg) rotate(2deg);
+}
+
+@keyframes MoveUpDown2 {
+  0%,
+  100% {
+    top: 140px;
+    transform: skew(5deg) rotate(2deg);
+  }
+  50% {
+    top: 175px;
+    transform: skew(0deg) rotate(2deg);
+  }
+}
