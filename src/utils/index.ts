@@ -32,7 +32,7 @@ export function getEtherscanLink(
   type: 'transaction' | 'token' | 'address' | 'block' | 'tipset'
 ): string {
   let prefix = `https://${ETHERSCAN_PREFIXES[chainId] || ETHERSCAN_PREFIXES[1]}etherscan.io`
-  if (chainId === ChainId.HYPERSPACE_TESTNET) prefix = `https://filfox.info/en`
+  if (chainId === ChainId.HYPERSPACE_TESTNET) prefix = `https://hyperspace.filfox.info/en`
 
   switch (type) {
     case 'transaction': {
