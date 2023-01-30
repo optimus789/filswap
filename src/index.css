@@ -46,3 +46,12 @@
     transform: skew(0deg) rotate(2deg);
   }
 }
+
+@media screen and (max-width: 900px) {
+  .ruby {
+    display: none;
+  }
+  .fileCoin {
+    display: none;
+  }
+}
