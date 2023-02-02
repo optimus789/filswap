@@ -21,70 +21,86 @@ export const callRpc = async (method: any, params?: any) => {
   return newData?.result
 }
 
-export const LendTokens = async (tokenToSend?: any): Promise<void> => {
-  const loanContract = useLoanContract(true)
-  const priorityFee = await callRpc('eth_maxPriorityFeePerGas')
-  return loanContract
-    .lendAmount({
-      maxPriorityFeePerGas: priorityFee,
-      value: BigNumber.from(tokenToSend)
-    })
-    .then((response: any) => {
-      console.log(response)
-    })
-    .catch((error: Error) => {
-      console.debug('Failed to approve token', error)
-      throw error
-    })
-}
+// export const LendTokens = async (tokenToSend?: any): Promise<void> => {
+//   const loanContract = useLoanContract(true)
+//   const priorityFee = await callRpc('eth_maxPriorityFeePerGas')
+//   if (!loanContract) {
+//     console.log('no contract')
+//     return
+//   }
+//   return loanContract
+//     .lendAmount({
+//       maxPriorityFeePerGas: priorityFee,
+//       value: BigNumber.from(tokenToSend)
+//     })
+//     .then((response: any) => {
+//       console.log(response)
+//     })
+//     .catch((error: Error) => {
+//       console.debug('Failed to approve token', error)
+//       throw error
+//     })
+// }
 
-export const borrowToken = async (tokenToSend?: any): Promise<void> => {
-  const loanContract = useLoanContract(true)
-  const priorityFee = await callRpc('eth_maxPriorityFeePerGas')
-  return loanContract
-    .lendAmount({
-      maxPriorityFeePerGas: priorityFee,
-      value: BigNumber.from(tokenToSend)
-    })
-    .then((response: any) => {
-      console.log(response)
-    })
-    .catch((error: Error) => {
-      console.debug('Failed to approve token', error)
-      throw error
-    })
-}
+// export const BorrowToken = async (tokenToSend?: any): Promise<void> => {
+//   const loanContract = useLoanContract(true)
+//   if (!loanContract) {
+//     console.log('no contract')
+//     return
+//   }
+//   const priorityFee = await callRpc('eth_maxPriorityFeePerGas')
+//   return loanContract
+//     .lendAmount({
+//       maxPriorityFeePerGas: priorityFee,
+//       value: BigNumber.from(tokenToSend)
+//     })
+//     .then((response: any) => {
+//       console.log(response)
+//     })
+//     .catch((error: Error) => {
+//       console.debug('Failed to approve token', error)
+//       throw error
+//     })
+// }
 
-export const getBorrowerData = async (tokenToSend?: any): Promise<void> => {
-  const loanContract = useLoanContract(true)
-  const priorityFee = await callRpc('eth_maxPriorityFeePerGas')
-  return loanContract
-    .lendAmount({
-      maxPriorityFeePerGas: priorityFee,
-      value: BigNumber.from(tokenToSend)
-    })
-    .then((response: any) => {
-      console.log(response)
-    })
-    .catch((error: Error) => {
-      console.debug('Failed to approve token', error)
-      throw error
-    })
-}
+// export const GetBorrowerData = async (tokenToSend?: any): Promise<void> => {
+//   const loanContract = useLoanContract(true)
+//   if (!loanContract) {
+//     console.log('no contract')
+//     return
+//   }
+//   const priorityFee = await callRpc('eth_maxPriorityFeePerGas')
+//   return loanContract
+//     .lendAmount({
+//       maxPriorityFeePerGas: priorityFee,
+//       value: BigNumber.from(tokenToSend)
+//     })
+//     .then((response: any) => {
+//       console.log(response)
+//     })
+//     .catch((error: Error) => {
+//       console.debug('Failed to approve token', error)
+//       throw error
+//     })
+// }
 
-export const getLenderData = async (tokenToSend?: any): Promise<void> => {
-  const loanContract = useLoanContract(true)
-  const priorityFee = await callRpc('eth_maxPriorityFeePerGas')
-  return loanContract
-    .lendAmount({
-      maxPriorityFeePerGas: priorityFee,
-      value: BigNumber.from(tokenToSend)
-    })
-    .then((response: any) => {
-      console.log(response)
-    })
-    .catch((error: Error) => {
-      console.debug('Failed to approve token', error)
-      throw error
-    })
-}
+// export const GetLenderData = async (tokenToSend?: any): Promise<void> => {
+//   const loanContract = useLoanContract(true)
+//   const priorityFee = await callRpc('eth_maxPriorityFeePerGas')
+//   if (!loanContract) {
+//     console.log('no contract')
+//     return
+//   }
+//   return loanContract
+//     .lendAmount({
+//       maxPriorityFeePerGas: priorityFee,
+//       value: BigNumber.from(tokenToSend)
+//     })
+//     .then((response: any) => {
+//       console.log(response)
+//     })
+//     .catch((error: Error) => {
+//       console.debug('Failed to approve token', error)
+//       throw error
+//     })
+// }
