@@ -56,7 +56,7 @@ const StyledArrowLeft = styled(ArrowLeft)`
   color: ${({ theme }) => theme.text1};
 `
 
-export function SwapPoolTabs({ active }: { active: 'swap' | 'pool' }) {
+export function SwapPoolTabs({ active }: { active: 'swap' | 'pool' | 'loan' }) {
   const { t } = useTranslation()
   return (
     <Tabs style={{ marginBottom: '20px', display: 'none' }}>
@@ -65,6 +65,9 @@ export function SwapPoolTabs({ active }: { active: 'swap' | 'pool' }) {
       </StyledNavLink>
       <StyledNavLink id={`pool-nav-link`} to={'/pool'} isActive={() => active === 'pool'}>
         {t('pool')}
+      </StyledNavLink>
+      <StyledNavLink id={`loan-nav-link`} to={'/loan'} isActive={() => active === 'loan'}>
+        {t('loan')}
       </StyledNavLink>
     </Tabs>
   )
@@ -84,7 +87,7 @@ export function FindPoolTabs() {
   )
 }
 
-export function AddRemoveTabs({ adding, creating }: { adding: boolean; creating: boolean }) {
+export function AddRemoveTabs({ adding, creating, loan }: { adding: boolean; creating: boolean; loan: boolean }) {
   // reset states on back
   const dispatch = useDispatch<AppDispatch>()
 
@@ -99,7 +102,9 @@ export function AddRemoveTabs({ adding, creating }: { adding: boolean; creating:
         >
           <StyledArrowLeft />
         </HistoryLink>
-        <ActiveText>{creating ? 'Create a pair' : adding ? 'Add Liquidity' : 'Remove Liquidity'}</ActiveText>
+        <ActiveText>
+          {loan ? 'Loan' : creating ? 'Create a pair' : adding && !loan ? 'Add Liquidity' : 'Remove Liquidity'}
+        </ActiveText>
         <Settings />
       </RowBetween>
     </Tabs>

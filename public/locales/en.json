@@ -49,6 +49,8 @@
   "willReceive": "will receive at least",
   "to": "to",
   "addLiquidity": "Add Liquidity",
+  "loan": "Loan",
+
   "deposit": "Deposit",
   "currentPoolSize": "Current Pool Size",
   "yourPoolShare": "Your Pool Share",

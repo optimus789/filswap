@@ -314,3 +314,6 @@ export const networks = [
   //   blockExplorerUrls: ['https://aurorascan.dev']
   // }
 ]
+
+export const LOAN_CONTRACT = '0x619064b3d2c5a481AE8F6764Fb1C009d9D2E9E0d'
+export const GARGANTUA_TOKEN = '0xC0f020c8cF91Ca8C4df61145Ac92Ad1f87a27d06'
