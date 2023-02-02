@@ -2,8 +2,6 @@
 pragma solidity ^0.8.13;
 
 import { MarketAPI } from "../lib/filecoin-solidity/contracts/v0.8/MarketAPI.sol";
-import { PrecompilesAPI } from "../lib/filecoin-solidity/contracts/v0.8/PrecompilesAPI.sol";
-import { CommonTypes } from "../lib/filecoin-solidity/contracts/v0.8/types/CommonTypes.sol";
 import { MarketTypes } from "../lib/filecoin-solidity/contracts/v0.8/types/MarketTypes.sol";
 import { Actor, HyperActor } from "../lib/filecoin-solidity/contracts/v0.8/utils/Actor.sol";
 import { Misc } from "../lib/filecoin-solidity/contracts/v0.8/utils/Misc.sol";
@@ -11,15 +9,10 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 /* 
 Contract Usage
-    Step   |   Who   |    What is happening  |   Why 
-    ------------------------------------------------
-    Deploy | contract owner   | contract owner deploys address is owner who can call addCID  | create contract setting up rules to follow
-    AddCID | data pinners     | set up cids that the contract will incentivize in deals      | add request for a deal in the filecoin network, "store data" function
-    Fund   | contract funders |  add FIL to the contract to later by paid out by deal        | ensure the deal actually gets stored by providing funds for bounty hunter and (indirect) storage provider
-    Claim  | bounty hunter    | claim the incentive to complete the cycle                    | pay back the bounty hunter for doing work for the contract
-
+    This contract is solely for the purpose of lending and borrowing Fil tokens 
+    to provide loans to Storage providers for there hardware costs.
 */
-contract DealRewarder {
+contract loanRewarder {
     address public owner;
     address constant CALL_ACTOR_ID = 0xfe00000000000000000000000000000000000005;
     uint64 constant DEFAULT_FLAG = 0x00000000;
@@ -52,6 +45,7 @@ contract DealRewarder {
         owner = msg.sender;
     }
 
+    
     function fund(address from, uint64 unused) public payable {}
 
     function lendAmount() public payable {
@@ -111,6 +105,10 @@ contract DealRewarder {
         return (borrowerData[actorId].emiAmount, borrowerData[actorId].borrowedAmount);
     }
 
+    function contractPublicData() public view returns(uint,uint,uint){
+        return (lendPool, lenderCount, totalInterestAmount);
+    }
+
     function getLenderData(address lender, uint sharePercent) public view returns(uint,uint,uint){
         uint amount = lenderData[lender].lentAmount;
         uint interestAmount = getPercentageOf(totalInterestAmount, sharePercent);
@@ -146,3 +144,4 @@ contract DealRewarder {
     }
 
 }
+

@@ -12,14 +12,28 @@ export function PoolPriceBar({
   currencies,
   noLiquidity,
   poolTokenPercentage,
-  price
+  price,
+  contractData
 }: {
   currencies: { [field in Field]?: Currency }
   noLiquidity?: boolean
   poolTokenPercentage?: Percent
   price?: Price
+  contractData?: any
 }) {
   const theme = useContext(ThemeContext)
+  if (contractData) {
+    console.log('Contract Data: ', contractData)
+    // console.log(
+    //   'lenderPool: ',
+    //   parseInt(contractData.'0'._hex),
+    //   'lentCount: ',
+    //   parseInt(contractData.'1'._hex),
+    //   'totalInterest Amount: ',
+    //   parseInt(contractData.'2'._hex)
+    // )
+  }
+  
   return (
     <AutoColumn gap="md">
       <AutoRow justify="space-around" gap="4px">

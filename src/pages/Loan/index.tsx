@@ -1,7 +1,7 @@
 import { BigNumber } from '@ethersproject/bignumber'
 import { TransactionResponse } from '@ethersproject/providers'
 import { Currency, currencyEquals, ETHER, TokenAmount, WETH } from '@uniswap/sdk'
-import React, { useCallback, useContext, useState } from 'react'
+import React, { useCallback, useContext, useState,useEffect } from 'react'
 import { Plus } from 'react-feather'
 import ReactGA from 'react-ga'
 import { RouteComponentProps } from 'react-router-dom'
@@ -40,6 +40,7 @@ import { currencyId } from '../../utils/currencyId'
 import { PoolPriceBar } from './PoolPriceBar'
 import { useIsTransactionUnsupported } from 'hooks/Trades'
 import UnsupportedCurrencyFooter from 'components/swap/UnsupportedCurrencyFooter'
+import { useContractDataCallback } from 'hooks/useLoanCallback'
 
 export default function Loan({
   match: {
@@ -123,6 +124,7 @@ export default function Loan({
   const [approvalA, approveACallback] = useApproveCallback(parsedAmounts[Field.CURRENCY_A], ROUTER_ADDRESS)
   const [approvalB, approveBCallback] = useApproveCallback(parsedAmounts[Field.CURRENCY_B], ROUTER_ADDRESS)
 
+  const [contractData] = useContractDataCallback()
   const addTransaction = useTransactionAdder()
 
   async function onAdd() {
@@ -308,7 +310,6 @@ export default function Loan({
   const isCreate = history.location.pathname.includes('/create')
 
   const addIsUnsupported = useIsTransactionUnsupported(currencies?.CURRENCY_A, currencies?.CURRENCY_B)
-
   return (
     <>
       <AppBody>
@@ -401,6 +402,7 @@ export default function Loan({
                       poolTokenPercentage={poolTokenPercentage}
                       noLiquidity={noLiquidity}
                       price={price}
+                      contractData={contractData}
                     />
                   </LightCard>
                 </LightCard>
