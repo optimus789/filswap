@@ -148,7 +148,7 @@ export function useBorrowCallback(): [any] {
 
 // same type of hook now for useLendAmountCallback
 
-export function useLendAmountCallback(value: any): [any, () => Promise<void>] {
+export function useLendAmountCallback(value?: string): [any, () => Promise<void>] {
   const { account } = useActiveWeb3React()
   const loanContract = useLoanContract()
 
@@ -161,13 +161,16 @@ export function useLendAmountCallback(value: any): [any, () => Promise<void>] {
   const lendCallback = useCallback(async (): Promise<void> => {
     console.log(typeof value, lendState)
     if (lendState.data && !account) return
-    if (!value) return
+    if (!value) {
+      console.error('Missing Amount to lend')
+      return
+    }
+    console.log('Value is: ', value)
     return loanContract
-
       ?.lendAmount({ value: value })
       .then((response: any) => {
-        console.log('This is the response: ', response)
-        lendState.lendAmount = response[0]._hex
+        console.log('This is the response of lendAmount: ', response)
+        // lendState.lendAmount = response[0]._hex
         lendState.data = true
         return response
       })

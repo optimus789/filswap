@@ -2,7 +2,7 @@ import { BigNumber } from '@ethersproject/bignumber'
 
 import { TransactionResponse } from '@ethersproject/providers'
 import { Currency, currencyEquals, ETHER, TokenAmount, WETH } from '@uniswap/sdk'
-import React, { useCallback, useContext, useState } from 'react'
+import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { Plus } from 'react-feather'
 import ReactGA from 'react-ga'
 import { RouteComponentProps } from 'react-router-dom'
@@ -86,6 +86,7 @@ export default function Loan({
 
   // modal and loading
   const [showConfirm, setShowConfirm] = useState<boolean>(false)
+  const [formattedInput, setFormattedInput] = useState<string>('0')
   const [attemptingTxn, setAttemptingTxn] = useState<boolean>(false) // clicked confirm
 
   // txn values
@@ -126,7 +127,7 @@ export default function Loan({
 
   const [contractData] = useContractDataCallback()
   const [lenderData] = useLenderAmountCallback()
-  const [lend, lendCallback] = useLendAmountCallback(parsedAmounts[Field.CURRENCY_A])
+  const [lend, lendCallback] = useLendAmountCallback(formattedInput)
 
   const addTransaction = useTransactionAdder()
 
@@ -313,6 +314,10 @@ export default function Loan({
   const isCreate = history.location.pathname.includes('/create')
 
   const addIsUnsupported = useIsTransactionUnsupported(currencies?.CURRENCY_A, currencies?.CURRENCY_B)
+
+  // setTimeout(() => {
+  //   console.log('Formatted Amounts: ', formattedAmounts[Field.CURRENCY_A], parsedAmounts)
+  // }, 6000)
   return (
     <>
       <AppBody>
@@ -428,7 +433,15 @@ export default function Loan({
                     {error ?? 'Supply'}
                   </Text>
                 </ButtonError> */}
-                <ButtonLight onClick={lendCallback}>
+                <ButtonLight
+                  onClick={
+                    formattedInput
+                      ? lendCallback
+                      : () => {
+                          console.log(formattedInput)
+                        }
+                  }
+                >
                   <Text fontSize={20} fontWeight={500}>
                     Lend
                   </Text>

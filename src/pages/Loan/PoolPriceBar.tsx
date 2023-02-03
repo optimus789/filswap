@@ -9,7 +9,6 @@ import { Field } from '../../state/mint/actions'
 import { TYPE } from '../../theme'
 import CountUp from 'react-countup'
 import { formatEther } from '@ethersproject/units'
-import Skeleton, { SkeletonTheme } from 'react-loading-skeleton'
 
 export function PoolPriceBar({
   currencies,
@@ -28,7 +27,6 @@ export function PoolPriceBar({
 }) {
   const [poolSize, setPoolSize] = useState(0)
   const [myLent, setMyLent] = useState(0)
-  const [poolShare, setPoolShare] = useState(0)
   const theme = useContext(ThemeContext)
 
   // let poolSize,
@@ -52,9 +50,8 @@ export function PoolPriceBar({
       console.log('Contract Data: ', contractData)
       setPoolSize(parseFloat(formatEther(parseInt(contractData?.lentAmount).toString())))
       setMyLent(parseFloat(formatEther(parseInt(lenderData?.lentAmount).toString())))
-      setPoolShare((myLent / poolSize) * 100 || 0)
     }
-  }, [contractData.data, lenderData.data])
+  }, [contractData.data, lenderData.data, lenderData, contractData])
 
   return (
     <AutoColumn gap="md">
@@ -77,13 +74,7 @@ export function PoolPriceBar({
           </Text>
         </AutoColumn>
         <AutoColumn justify="center">
-          <TYPE.black>
-            {noLiquidity && price
-              ? '100'
-              : (poolTokenPercentage?.lessThan(ONE_BIPS) ? '<0.01' : poolTokenPercentage?.toFixed(2)) ?? '0'}
-            %
-          </TYPE.black>
-
+          <CountUp separator="  " decimals={2} decimal="." suffix=" %" end={(myLent / poolSize) * 100} />
           <Text fontWeight={500} fontSize={14} color={theme.text2} pt={1}>
             Share of Pool
           </Text>
