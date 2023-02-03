@@ -257,13 +257,13 @@ export const networks = [
     title: 'Filecoin Hyperspace Testnet',
     chainId: '3141',
     imgSrc: 'https://polygonscan.com/images/svg/brands/polygon.svg',
-    rpcUrl: 'https://api.hyperspace.node.glif.io/rpc/v0',
+    rpcUrl: 'https://nd-598-591-119.p2pify.com/a141f2dc21c7e5290ba72b6ef98224d1/rpc/v0',
     nativeCurrency: {
       name: 'TFIL',
       symbol: 'TFIL',
       decimals: 18
     },
-    blockExplorerUrls: ['https://api.hyperspace.node.glif.io/rpc/v0']
+    blockExplorerUrls: ['https://hyperspace.filfox.info/en']
   }
   // {
   //   title: 'Avax Mainnet',
@@ -315,5 +315,5 @@ export const networks = [
   // }
 ]
 
-export const LOAN_CONTRACT = '0xF9d7249B61D8a513a5ab585C5B1bcfcb5d97FC04'
+export const LOAN_CONTRACT = '0xACF970fb1cfe2AeeaA391E90e2B269E08CEA1faB'
 export const GARGANTUA_TOKEN = '0xC0f020c8cF91Ca8C4df61145Ac92Ad1f87a27d06'

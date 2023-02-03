@@ -45,7 +45,7 @@ export function useLenderAmountCallback(): [any] {
   const lenderDataState = useMemo(() => {
     return {
       lentAmount: 0,
-      lentPool: 0,
+
       data: false
     }
   }, [])
@@ -57,7 +57,6 @@ export function useLenderAmountCallback(): [any] {
         console.log(response)
         console.log('This is the response: ', response)
         lenderDataState.lentAmount = response[0]._hex
-        lenderDataState.lentPool = response[1]._hex
         lenderDataState.data = true
         return response
       })
@@ -149,7 +148,7 @@ export function useBorrowCallback(): [any] {
 
 // same type of hook now for useLendAmountCallback
 
-export function useLendAmountCallback(): [any] {
+export function useLendAmountCallback(value: any): [any, () => Promise<void>] {
   const { account } = useActiveWeb3React()
   const loanContract = useLoanContract()
 
@@ -160,10 +159,12 @@ export function useLendAmountCallback(): [any] {
     }
   }, [])
   const lendCallback = useCallback(async (): Promise<void> => {
+    console.log(typeof value, lendState)
     if (lendState.data && !account) return
+    if (!value) return
     return loanContract
 
-      ?.lendAmount(account, {})
+      ?.lendAmount({ value: value })
       .then((response: any) => {
         console.log('This is the response: ', response)
         lendState.lendAmount = response[0]._hex
@@ -175,13 +176,13 @@ export function useLendAmountCallback(): [any] {
         throw error
       })
   }, [account, lendState, loanContract])
-  useEffect(() => {
-    if (!lendState.data) {
-      lendCallback()
-    }
-  }, [lendState, lendCallback])
+  // useEffect(() => {
+  //   if (!lendState.data) {
+  //     lendCallback()
+  //   }
+  // }, [lendState, lendCallback])
 
-  return [lendState]
+  return [lendState, lendCallback]
 }
 
 // export function useLendCallback(tokenToSend?: any): () => Promise<void> {

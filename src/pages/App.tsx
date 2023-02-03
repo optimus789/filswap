@@ -32,6 +32,7 @@ import Swap from './Swap'
 import { OpenClaimAddressModalAndRedirectToSwap, RedirectPathToSwapOnly, RedirectToSwap } from './Swap/redirects'
 import Vote from './Vote'
 import VotePage from './Vote/VotePage'
+import 'react-loading-skeleton/dist/skeleton.css'
 
 const AppWrapper = styled.div`
   display: flex;

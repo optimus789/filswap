@@ -104,7 +104,8 @@
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
     "integration-test": "start-server-and-test 'serve build -l 3000' http://localhost:3000 'cypress run'",
-    "postinstall": "rm -rf ./node_modules/@uniswap/sdk; cp -r ./dist  ./node_modules/@uniswap/sdk"
+    "postinstall": "rm -rf ./node_modules/@uniswap/sdk; cp -r ./dist  ./node_modules/@uniswap/sdk",
+    "postinstallwindows": "rmdir /S /Q node_modules/@uniswap/sdk & xcopy /E /I dist node_modules/@uniswap/sdk"
   },
   "eslintConfig": {
     "extends": "react-app",
@@ -129,6 +130,7 @@
     "@material-ui/core": "^4.12.4",
     "@material-ui/icons": "^4.11.3",
     "@uniswap/default-token-list": "^2.0.0",
+    "react-countup": "^6.4.1",
     "web3": "^1.8.1"
   }
 }

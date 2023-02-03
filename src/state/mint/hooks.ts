@@ -157,6 +157,7 @@ export function useDerivedMintInfo(
     }
   }, [liquidityMinted, totalSupply])
 
+  console.log('UNISWAP:', parsedAmounts)
   let error: string | undefined
   if (!account) {
     error = 'Connect Wallet'

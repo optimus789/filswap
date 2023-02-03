@@ -1,4 +1,5 @@
 import { BigNumber } from '@ethersproject/bignumber'
+
 import { TransactionResponse } from '@ethersproject/providers'
 import { Currency, currencyEquals, ETHER, TokenAmount, WETH } from '@uniswap/sdk'
 import React, { useCallback, useContext, useState } from 'react'
@@ -40,8 +41,7 @@ import { currencyId } from '../../utils/currencyId'
 import { PoolPriceBar } from './PoolPriceBar'
 import { useIsTransactionUnsupported } from 'hooks/Trades'
 import UnsupportedCurrencyFooter from 'components/swap/UnsupportedCurrencyFooter'
-import { useContractDataCallback } from 'hooks/useLoanCallback'
-
+import { useContractDataCallback, useLendAmountCallback, useLenderAmountCallback } from 'hooks/useLoanCallback'
 export default function Loan({
   match: {
     params: { currencyIdA, currencyIdB }
@@ -125,6 +125,9 @@ export default function Loan({
   const [approvalB, approveBCallback] = useApproveCallback(parsedAmounts[Field.CURRENCY_B], ROUTER_ADDRESS)
 
   const [contractData] = useContractDataCallback()
+  const [lenderData] = useLenderAmountCallback()
+  const [lend, lendCallback] = useLendAmountCallback(parsedAmounts[Field.CURRENCY_A])
+
   const addTransaction = useTransactionAdder()
 
   async function onAdd() {
@@ -403,21 +406,18 @@ export default function Loan({
                       noLiquidity={noLiquidity}
                       price={price}
                       contractData={contractData}
+                      lenderData={lenderData}
                     />
                   </LightCard>
                 </LightCard>
               </>
             )}
 
-            {addIsUnsupported ? (
-              <ButtonPrimary disabled={true}>
-                <TYPE.main mb="4px">Unsupported Asset</TYPE.main>
-              </ButtonPrimary>
-            ) : !account ? (
+            {!account ? (
               <ButtonLight onClick={toggleWalletModal}>Connect Wallet</ButtonLight>
             ) : (
               <AutoColumn gap={'md'}>
-                <ButtonError
+                {/* <ButtonError
                   onClick={() => {
                     expertMode ? onAdd() : setShowConfirm(true)
                   }}
@@ -427,7 +427,12 @@ export default function Loan({
                   <Text fontSize={20} fontWeight={500}>
                     {error ?? 'Supply'}
                   </Text>
-                </ButtonError>
+                </ButtonError> */}
+                <ButtonLight onClick={lendCallback}>
+                  <Text fontSize={20} fontWeight={500}>
+                    Lend
+                  </Text>
+                </ButtonLight>
               </AutoColumn>
             )}
           </AutoColumn>

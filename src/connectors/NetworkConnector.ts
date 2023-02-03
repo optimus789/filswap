@@ -68,7 +68,11 @@ class MiniRpcProvider implements AsyncSendable {
     }
 
     if (!response.ok) {
-      batch.forEach(({ reject }) => reject(new RequestError(`${response.status}: ${response.statusText}`, -32000)))
+      try {
+        batch.forEach(({ reject }) => reject(new RequestError(`${response.status}: ${response.statusText}`, -32000)))
+      } catch {
+        console.log(console.error())
+      }
       return
     }
 

@@ -9,7 +9,7 @@ export const nodes = {
   '42161': 'https://arb1.arbitrum.io/rpc',
   '10': 'https://mainnet.optimism.io/',
   '1313161554': 'https://mainnet.aurora.dev',
-  '3141': 'https://api.hyperspace.node.glif.io/rpc/v0'
+  '3141': 'https://nd-598-591-119.p2pify.com/a141f2dc21c7e5290ba72b6ef98224d1/rpc/v0'
 }
 
 const getNodeUrl = () => {
