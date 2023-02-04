@@ -75,6 +75,28 @@ function TopLevelModals() {
   return <AddressClaimModal isOpen={open} onDismiss={toggle} />
 }
 
+// let selectedAccount
+
+// export const init = () => {
+//   const provider = window.ethereum
+
+//   if (typeof provider !== 'undefined') {
+//     provider
+//       .request({ method: 'eth_requestAccounts' })
+//       .then(accounts => {
+//         selectedAccount = accounts[0]
+//         console.log(`Selected account is ${selectedAccount}`)
+//       })
+//       .catch(err => {
+//         console.log(err)
+//       })
+//     window.ethereum.on('accountsChanged', function(accounts) {
+//       selectedAccount = accounts[0]
+//       console.log(`Selected account changed to ${selectedAccount}`)
+//     })
+//   }
+// }
+
 export default function App() {
   return (
     <Suspense fallback={null}>

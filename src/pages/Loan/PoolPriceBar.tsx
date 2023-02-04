@@ -58,7 +58,7 @@ export function PoolPriceBar({
       <AutoRow justify="space-around" gap="4px">
         <AutoColumn justify="center">
           {/* <TYPE.black>{price?.toSignificant(6) ?? '-'}</TYPE.black> */}
-          <CountUp separator="  " decimals={3} decimal="." prefix="TFIL" end={myLent} />
+          <CountUp separator="  " decimals={3} decimal="." prefix="TFIL " end={myLent} />
           <Text fontWeight={500} fontSize={14} color={theme.text2} pt={1}>
             Your Lent
           </Text>
@@ -66,7 +66,7 @@ export function PoolPriceBar({
         <AutoColumn justify="center">
           {/* <TYPE.black>{price?.invert()?.toSignificant(6) ?? '-'}</TYPE.black> */}
 
-          <CountUp separator="  " decimals={3} decimal="." prefix="TFIL" end={poolSize} />
+          <CountUp separator="  " decimals={3} decimal="." prefix="TFIL " end={poolSize} />
 
           <Text fontWeight={500} fontSize={14} color={theme.text2} pt={1}>
             Pool Size

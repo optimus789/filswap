@@ -7,12 +7,13 @@ declare module 'jazzicon' {
 declare module 'fortmatic'
 
 interface Window {
-  ethereum?: {
-    isMetaMask?: true
-    on?: (...args: any[]) => void
-    removeListener?: (...args: any[]) => void
-    autoRefreshOnNetworkChange?: boolean
-  }
+  // ethereum?: {
+  //   isMetaMask?: true
+  //   on?: (...args: any[]) => void
+  //   removeListener?: (...args: any[]) => void
+  //   autoRefreshOnNetworkChange?: boolean
+  // }
+  ethereum: any
   web3?: {}
 }
 

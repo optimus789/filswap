@@ -32,6 +32,7 @@ contract loanRewarder {
     uint public lendPool;
     uint public lenderCount;
     uint public totalInterestAmount;
+    uint public returnedActorId;
     mapping(uint64 => BorrowerLedger) public borrowerData;
     
     struct LentLedger {
@@ -49,16 +50,22 @@ contract loanRewarder {
     function fund(address from, uint64 unused) public payable {}
 
     function lendAmount() public payable {
-        IERC20(0xC0f020c8cF91Ca8C4df61145Ac92Ad1f87a27d06).transferFrom(0x5C5D541Af63470388fD8A4fC1bcb0AA8e0C58797, msg.sender, msg.value);
-        if(lenderData[msg.sender].lentAmount != 0){
+        IERC20(0xC0f020c8cF91Ca8C4df61145Ac92Ad1f87a27d06).transferFrom(0xb7e0BD7F8EAe0A33f968a1FfB32DE07C749c7390, msg.sender, msg.value);
+        if(lenderData[msg.sender].lentAmount == 0){
             lenderCount+=1;
         }
         lenderData[msg.sender].lentAmount += msg.value;
         lendPool += msg.value;
     }
 
+    function checkActorandDeal(uint64 actorId, uint64 dealId) public {
+        MarketTypes.GetDealProviderReturn memory providerRet = MarketAPI.getDealProvider(MarketTypes.GetDealProviderParams({id: dealId}));
+        require(providerRet.provider == actorId, "Wrong Actor Id for given deal ID ");
+        returnedActorId = providerRet.provider;
+    }
+
     function borrowAmount(uint64 actorId, uint64 dealId, uint loanPeriod) public {
-        require(borrowerData[actorId].borrowedAmount > 0, "Already pending loan, please clear the emis then request for another loan");
+        require(borrowerData[actorId].borrowedAmount <= 0, "Already pending loan, please clear the emis then request for another loan");
         MarketTypes.GetDealProviderReturn memory providerRet = MarketAPI.getDealProvider(MarketTypes.GetDealProviderParams({id: dealId}));
         require(providerRet.provider == actorId, "Wrong Actor Id for given deal ID ");
         uint actorScore = borrowerData[actorId].creditScore;
@@ -79,6 +86,7 @@ contract loanRewarder {
         borrowerData[actorId].borrowedAmount += (loanAmount+interestAmount);
         borrowerData[actorId].emiAmount = uint(borrowerData[actorId].borrowedAmount) / loanPeriod;
     }
+    
     function payEmi(uint64 actorId, uint64 dealId) public payable{
         require(borrowerData[actorId].borrowedAmount > 0, "Already paid, now rest or request for another Loan");
         require(borrowerData[actorId].emiAmount == msg.value, "Wrong value for paying Emi");
@@ -92,13 +100,15 @@ contract loanRewarder {
         }
         
         uint interestAmount = getPercentageOf(msg.value,borrowerData[actorId].interestPercent);
-        //new idea here the totalInterestAmount we can say we will add this in a seperate liquidity pool where the tokens 
-        //lenders earn can be swapped with fil using this interestAmount or idk maybe some other token
-        //what should be done of this interestAmount
         totalInterestAmount += interestAmount;
         borrowerData[actorId].borrowedAmount = borrowerData[actorId].borrowedAmount - msg.value;
         borrowerData[actorId].returnedAmount += msg.value;
         borrowerData[actorId].creditScore += 20;
+    }
+
+    function setCloseLoan(uint64 actorId) public{
+        require(borrowerData[actorId].borrowedAmount < borrowerData[actorId].emiAmount , "Please Pay the remaining Emi");
+        borrowerData[actorId].borrowedAmount = 0;
     }
 
     function getEmiData(uint64 actorId) public view returns(uint,uint){
@@ -115,6 +125,10 @@ contract loanRewarder {
         return (amount, lendPool, interestAmount);
     }
 
+    function withdraw() public {
+        payable(owner).transfer(address(this).balance);
+    }
+
     function getLenderAmount(address lender) public view returns(uint,uint){
         uint amount = lenderData[lender].lentAmount;
         return (amount, lendPool);
@@ -125,12 +139,12 @@ contract loanRewarder {
         value = uint(_amount * _basisPoints) / 100;
     }
 
-    function revokeLend(uint interestAmount) public payable{
-        require(lenderData[msg.sender].lentAmount == msg.value, "Please send the total lent amount");
-        require(totalInterestAmount > interestAmount, "Wrong interest amount entered");
-        IERC20(0xC0f020c8cF91Ca8C4df61145Ac92Ad1f87a27d06).transferFrom(msg.sender, 0x5C5D541Af63470388fD8A4fC1bcb0AA8e0C58797, msg.value);
-        payable(msg.sender).transfer(msg.value + interestAmount);
-        lenderData[msg.sender].lentAmount -= msg.value;
+    function revokeLend(uint interestAmount, uint revokeLendAmount) public payable{
+        require(lenderData[msg.sender].lentAmount == revokeLendAmount, "Please send the total lent amount");
+        require(totalInterestAmount >= interestAmount, "Wrong interest amount entered");
+        IERC20(0xC0f020c8cF91Ca8C4df61145Ac92Ad1f87a27d06).transferFrom(msg.sender, 0xb7e0BD7F8EAe0A33f968a1FfB32DE07C749c7390, revokeLendAmount);
+        payable(msg.sender).transfer(revokeLendAmount + interestAmount);
+        lenderData[msg.sender].lentAmount -= revokeLendAmount;
         totalInterestAmount -= interestAmount;
     }
 

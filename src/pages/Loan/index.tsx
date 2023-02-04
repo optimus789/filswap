@@ -1,6 +1,6 @@
 import { BigNumber } from '@ethersproject/bignumber'
 
-import { TransactionResponse } from '@ethersproject/providers'
+import { TransactionResponse, Web3Provider } from '@ethersproject/providers'
 import { Currency, currencyEquals, ETHER, TokenAmount, WETH } from '@uniswap/sdk'
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { Plus } from 'react-feather'
@@ -8,7 +8,7 @@ import ReactGA from 'react-ga'
 import { RouteComponentProps } from 'react-router-dom'
 import { Text } from 'rebass'
 import { ThemeContext } from 'styled-components'
-import { ButtonError, ButtonLight, ButtonPrimary } from '../../components/Button'
+import { ButtonError, ButtonLight, ButtonPrimary, ButtonSecondary } from '../../components/Button'
 import { BlueCard, LightCard } from '../../components/Card'
 import { AutoColumn, ColumnCenter } from '../../components/Column'
 import TransactionConfirmationModal, { ConfirmationModalContent } from '../../components/TransactionConfirmationModal'
@@ -18,7 +18,7 @@ import { AddRemoveTabs } from '../../components/NavigationTabs'
 import { MinimalPositionCard } from '../../components/PositionCard'
 import Row, { RowBetween, RowFlat } from '../../components/Row'
 
-import { ROUTER_ADDRESS } from '../../constants'
+import { LOAN_CONTRACT, ROUTER_ADDRESS } from '../../constants'
 import { PairState } from '../../data/Reserves'
 import { useActiveWeb3React } from '../../hooks'
 import { useCurrency } from '../../hooks/Tokens'
@@ -31,7 +31,7 @@ import { useDerivedMintInfo, useMintActionHandlers, useMintState } from '../../s
 import { useTransactionAdder } from '../../state/transactions/hooks'
 import { useIsExpertMode, useUserSlippageTolerance } from '../../state/user/hooks'
 import { TYPE } from '../../theme'
-import { calculateGasMargin, calculateSlippageAmount, getRouterContract } from '../../utils'
+import { calculateGasMargin, calculateSlippageAmount, getContract, getRouterContract } from '../../utils'
 import { maxAmountSpend } from '../../utils/maxAmountSpend'
 import { wrappedCurrency } from '../../utils/wrappedCurrency'
 import AppBody from '../AppBody'
@@ -45,6 +45,9 @@ import { useContractDataCallback, useLendAmountCallback, useLenderAmountCallback
 import styled from 'styled-components'
 import { darken } from 'polished'
 import { Input as NumericalInput } from '../../components/LoanInput'
+import { parseEther } from 'ethers/lib/utils'
+import loanAbi from '../../constants/abis/loan-rewarder.json'
+
 const StyledInput = styled.input<{ error?: boolean; fontSize?: string; align?: string }>`
   color: ${({ error, theme }) => (error ? theme.red1 : theme.text1)};
   width: 0;
@@ -158,13 +161,51 @@ export default function Loan({
   const [approvalA, approveACallback] = useApproveCallback(parsedAmounts[Field.CURRENCY_A], ROUTER_ADDRESS)
   const [approvalB, approveBCallback] = useApproveCallback(parsedAmounts[Field.CURRENCY_B], ROUTER_ADDRESS)
   const [lendValue, setLendValue] = useState<string>('0')
+  const [web3Provider, setWeb3Provider] = useState<any>(null)
+  const [accountAddress, setAccountAddress] = useState<string>('')
 
   const [contractData] = useContractDataCallback()
   const [lenderData] = useLenderAmountCallback()
   const addTransaction = useTransactionAdder()
 
+  useEffect(() => {
+    const provider = window.ethereum
+
+    if (typeof provider !== 'undefined') {
+      //Metamask is installed
+      provider
+        .request({ method: 'eth_requestAccounts' })
+        .then((accounts: any) => {
+          console.log('All accounts: ', accounts)
+          setAccountAddress(accounts[0])
+        })
+        .catch((err: any) => {
+          console.log(err)
+        })
+    }
+    const web3Provider = new Web3Provider(window.ethereum)
+    setWeb3Provider(web3Provider)
+  }, [])
+
   async function OnAddLend(lendValue: string) {
-    const [lend, lendCallback] = useLendAmountCallback(lendValue)
+    if (!web3Provider && !accountAddress && lendValue !== '0') return
+    console.log('Check lendValue: ', lendValue)
+    const signer = web3Provider.getSigner(accountAddress)
+    const contract = getContract(LOAN_CONTRACT, loanAbi, web3Provider, accountAddress)
+    const amount = parseEther(lendValue)
+    const tx = await contract.lendAmount({ value: amount })
+    await tx.wait()
+    console.log('Transaction successful!')
+  }
+  async function OnRevokeLend(lendValue: string) {
+    if (!web3Provider && !accountAddress && lendValue !== '0') return
+    console.log('Check lendValue: ', lendValue)
+    const signer = web3Provider.getSigner(accountAddress)
+    const loanContract = getContract(LOAN_CONTRACT, loanAbi, web3Provider, accountAddress)
+    const amount = parseEther(lendValue)
+    const tx = await loanContract.lendAmount({ value: amount })
+    await tx.wait()
+    console.log('Transaction successful!')
   }
   async function onAdd() {
     if (!chainId || !library || !account) return
@@ -475,18 +516,6 @@ export default function Loan({
                 </InputRow>
               </Container>
             </InputPanel>
-            <CurrencyInputPanel
-              value={formattedAmounts[Field.CURRENCY_A]}
-              onUserInput={onFieldAInput}
-              onMax={() => {
-                onFieldAInput(maxAmounts[Field.CURRENCY_A]?.toExact() ?? '')
-              }}
-              onCurrencySelect={handleCurrencyASelect}
-              showMaxButton={!atMaxAmounts[Field.CURRENCY_A]}
-              currency={currencies[Field.CURRENCY_A]}
-              id="add-liquidity-input-tokena"
-              showCommonBases
-            />
             {/* <ColumnCenter>
               <Plus size="16" color={theme.text2} />
             </ColumnCenter> */}
@@ -502,7 +531,7 @@ export default function Loan({
               id="add-liquidity-input-tokenb"
               showCommonBases
             /> */}
-            {currencies[Field.CURRENCY_A] && (
+            {
               <>
                 <LightCard padding="0px" borderRadius={'20px'}>
                   <RowBetween padding="1rem">
@@ -522,7 +551,7 @@ export default function Loan({
                   </LightCard>
                 </LightCard>
               </>
-            )}
+            }
 
             {!account ? (
               <ButtonLight onClick={toggleWalletModal}>Connect Wallet</ButtonLight>
@@ -544,6 +573,15 @@ export default function Loan({
                     Lend
                   </Text>
                 </ButtonLight>
+                {parseInt(lenderData?.lentAmount) > 0 ? (
+                  <ButtonSecondary disabled={lendValue === '0'} onClick={() => OnRevokeLend(lendValue)}>
+                    <Text fontSize={20} fontWeight={500}>
+                      Revoke
+                    </Text>
+                  </ButtonSecondary>
+                ) : (
+                  ''
+                )}
               </AutoColumn>
             )}
           </AutoColumn>
