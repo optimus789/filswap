@@ -18,7 +18,7 @@ import { AddRemoveTabs } from '../../components/NavigationTabs'
 import { MinimalPositionCard } from '../../components/PositionCard'
 import Row, { RowBetween, RowFlat } from '../../components/Row'
 
-import { LOAN_CONTRACT, ROUTER_ADDRESS } from '../../constants'
+import { GARGANTUA_TOKEN, LOAN_CONTRACT, ROUTER_ADDRESS } from '../../constants'
 import { PairState } from '../../data/Reserves'
 import { useActiveWeb3React } from '../../hooks'
 import { useCurrency } from '../../hooks/Tokens'
@@ -47,6 +47,7 @@ import { darken } from 'polished'
 import { Input as NumericalInput } from '../../components/LoanInput'
 import { parseEther } from 'ethers/lib/utils'
 import loanAbi from '../../constants/abis/loan-rewarder.json'
+import gargantuaAbi from '../../constants/abis/gargantuaErc20.json'
 
 const StyledInput = styled.input<{ error?: boolean; fontSize?: string; align?: string }>`
   color: ${({ error, theme }) => (error ? theme.red1 : theme.text1)};
@@ -161,9 +162,13 @@ export default function Loan({
   const [approvalA, approveACallback] = useApproveCallback(parsedAmounts[Field.CURRENCY_A], ROUTER_ADDRESS)
   const [approvalB, approveBCallback] = useApproveCallback(parsedAmounts[Field.CURRENCY_B], ROUTER_ADDRESS)
   const [lendValue, setLendValue] = useState<string>('0')
+  const [actorID, setActorID] = useState<string>('0')
+
+  const [dealID, setDealID] = useState<string>('0')
+
   const [web3Provider, setWeb3Provider] = useState<any>(null)
   const [accountAddress, setAccountAddress] = useState<string>('')
-
+  const [loanMode, setLoanMode] = useState<boolean>(true)
   const [contractData] = useContractDataCallback()
   const [lenderData] = useLenderAmountCallback()
   const addTransaction = useTransactionAdder()
@@ -190,7 +195,6 @@ export default function Loan({
   async function OnAddLend(lendValue: string) {
     if (!web3Provider && !accountAddress && lendValue !== '0') return
     console.log('Check lendValue: ', lendValue)
-    const signer = web3Provider.getSigner(accountAddress)
     const contract = getContract(LOAN_CONTRACT, loanAbi, web3Provider, accountAddress)
     const amount = parseEther(lendValue)
     const tx = await contract.lendAmount({ value: amount })
@@ -200,12 +204,34 @@ export default function Loan({
   async function OnRevokeLend(lendValue: string) {
     if (!web3Provider && !accountAddress && lendValue !== '0') return
     console.log('Check lendValue: ', lendValue)
-    const signer = web3Provider.getSigner(accountAddress)
+    const gargantuaContract = getContract(GARGANTUA_TOKEN, gargantuaAbi, web3Provider, accountAddress)
+    // check accountAddress for Gargantua token balance and allowance of lendValue amount and approve the LOAN_CONTRACT to spend the lendValue amount if not already approved
+    const gargantuaBalance = await gargantuaContract.balanceOf(accountAddress)
+    const gargantuaAllowance = await gargantuaContract.allowance(accountAddress, LOAN_CONTRACT)
+    console.log('Balance and allowance: ', gargantuaBalance, gargantuaAllowance)
+    if (parseInt(gargantuaBalance?._hex) < parseInt(parseEther(lendValue)._hex)) {
+      console.log('Insufficient Gargantua token balance')
+      return
+    }
+    if (parseInt(gargantuaBalance?._hex) < parseInt(parseEther(lendValue)._hex)) {
+      const tx = await gargantuaContract.approve(LOAN_CONTRACT, parseEther(lendValue))
+      await tx.wait()
+      console.log('Gargantua token approved')
+    }
     const loanContract = getContract(LOAN_CONTRACT, loanAbi, web3Provider, accountAddress)
+    // call getLenderAmount function to get lendedAmount and lendPool to calculate sharePercent and then calculate interest and then call revokeAmount function to revoke the lendValue amount
+    const lenderData = await loanContract.getLenderAmount(accountAddress)
+    console.log('lenderData Called : ', lenderData)
+    const lendedAmount = parseInt(lenderData[0]._hex)
+    const lendPool = parseInt(lenderData[1]._hex)
+    const totalInterestAmount = await loanContract.totalInterestAmount()
+    console.log('totalInterestAmount Called : ', totalInterestAmount)
+    const sharePercent = (lendedAmount * 100) / lendPool
+    const interest = (sharePercent * totalInterestAmount) / 100
     const amount = parseEther(lendValue)
-    const tx = await loanContract.lendAmount({ value: amount })
+    const tx = await loanContract.revokeLend(interest, amount)
     await tx.wait()
-    console.log('Transaction successful!')
+    console.log('Revoke successful!')
   }
   async function onAdd() {
     if (!chainId || !library || !account) return
@@ -433,13 +459,10 @@ export default function Loan({
 
   const addIsUnsupported = useIsTransactionUnsupported(currencies?.CURRENCY_A, currencies?.CURRENCY_B)
 
-  // setTimeout(() => {
-  //   console.log('Formatted Amounts: ', formattedAmounts[Field.CURRENCY_A], parsedAmounts)
-  // }, 6000)
   return (
     <>
       <AppBody>
-        <AddRemoveTabs creating={isCreate} adding={true} loan={true} />
+        <AddRemoveTabs creating={isCreate} adding={true} loan={loanMode} />
         <Wrapper>
           <TransactionConfirmationModal
             isOpen={showConfirm}
@@ -487,14 +510,15 @@ export default function Loan({
                   </BlueCard>
                 </ColumnCenter>
               ))}
-            <InputPanel id={'lendAmount'}>
-              <Container hideInput={false}>
-                <LabelRow>
-                  <RowBetween>
-                    <TYPE.body color={theme.text2} fontWeight={500} fontSize={14}>
-                      Input
-                    </TYPE.body>
-                    {/* {account && (
+            {loanMode ? (
+              <InputPanel id={'lendAmount'}>
+                <Container hideInput={false}>
+                  <LabelRow>
+                    <RowBetween>
+                      <TYPE.body color={theme.text2} fontWeight={500} fontSize={14}>
+                        Input
+                      </TYPE.body>
+                      {/* {account && (
                       <TYPE.body
                         color={theme.text2}
                         fontWeight={500}
@@ -504,33 +528,81 @@ export default function Loan({
                         Balance:
                       </TYPE.body>
                     )} */}
-                  </RowBetween>
-                </LabelRow>
-                <InputRow selected={true}>
-                  <StyledInput
-                    className="token-amount-input"
-                    value={lendValue}
-                    placeholder={'0.0'}
-                    onChange={event => setLendValue(event.target.value || '')}
-                  />
-                </InputRow>
-              </Container>
-            </InputPanel>
-            {/* <ColumnCenter>
-              <Plus size="16" color={theme.text2} />
-            </ColumnCenter> */}
-            {/* <CurrencyInputPanel
-              value={formattedAmounts[Field.CURRENCY_B]}
-              onUserInput={onFieldBInput}
-              onCurrencySelect={handleCurrencyBSelect}
-              onMax={() => {
-                onFieldBInput(maxAmounts[Field.CURRENCY_B]?.toExact() ?? '')
-              }}
-              showMaxButton={!atMaxAmounts[Field.CURRENCY_B]}
-              currency={currencies[Field.CURRENCY_B]}
-              id="add-liquidity-input-tokenb"
-              showCommonBases
-            /> */}
+                    </RowBetween>
+                  </LabelRow>
+                  <InputRow selected={true}>
+                    <StyledInput
+                      className="token-amount-input"
+                      value={lendValue}
+                      placeholder={'0.0'}
+                      onChange={event => setLendValue(event.target.value || '')}
+                    />
+                  </InputRow>
+                </Container>
+              </InputPanel>
+            ) : (
+              <>
+                <InputPanel id={'actorID'}>
+                  <Container hideInput={false}>
+                    <LabelRow>
+                      <RowBetween>
+                        <TYPE.body color={theme.text2} fontWeight={500} fontSize={14}>
+                          Actor ID
+                        </TYPE.body>
+                        {/* {account && (
+                     <TYPE.body
+                       color={theme.text2}
+                       fontWeight={500}
+                       fontSize={14}
+                       style={{ display: 'inline', cursor: 'pointer' }}
+                     >
+                       Balance:
+                     </TYPE.body>
+                   )} */}
+                      </RowBetween>
+                    </LabelRow>
+                    <InputRow selected={true}>
+                      <StyledInput
+                        className="token-amount-input"
+                        value={actorID}
+                        placeholder={'0'}
+                        onChange={event => setActorID(event.target.value || '')}
+                      />
+                    </InputRow>
+                  </Container>
+                </InputPanel>
+                <InputPanel id={'dealID'}>
+                  <Container hideInput={false}>
+                    <LabelRow>
+                      <RowBetween>
+                        <TYPE.body color={theme.text2} fontWeight={500} fontSize={14}>
+                          Deal ID
+                        </TYPE.body>
+                        {/* {account && (
+                     <TYPE.body
+                       color={theme.text2}
+                       fontWeight={500}
+                       fontSize={14}
+                       style={{ display: 'inline', cursor: 'pointer' }}
+                     >
+                       Balance:
+                     </TYPE.body>
+                   )} */}
+                      </RowBetween>
+                    </LabelRow>
+                    <InputRow selected={true}>
+                      <StyledInput
+                        className="token-amount-input"
+                        value={dealID}
+                        placeholder={'0'}
+                        onChange={event => setDealID(event.target.value || '')}
+                      />
+                    </InputRow>
+                  </Container>
+                </InputPanel>
+              </>
+            )}
+
             {
               <>
                 <LightCard padding="0px" borderRadius={'20px'}>
@@ -540,14 +612,7 @@ export default function Loan({
                     </TYPE.subHeader>
                   </RowBetween>{' '}
                   <LightCard padding="1rem" borderRadius={'20px'}>
-                    <PoolPriceBar
-                      currencies={currencies}
-                      poolTokenPercentage={poolTokenPercentage}
-                      noLiquidity={noLiquidity}
-                      price={price}
-                      contractData={contractData}
-                      lenderData={lenderData}
-                    />
+                    <PoolPriceBar loanMode={loanMode} contractData={contractData} lenderData={lenderData} />
                   </LightCard>
                 </LightCard>
               </>
@@ -568,20 +633,48 @@ export default function Loan({
                     {error ?? 'Supply'}
                   </Text>
                 </ButtonError> */}
-                <ButtonLight disabled={lendValue === '0'} onClick={() => OnAddLend(lendValue)}>
-                  <Text fontSize={20} fontWeight={500}>
-                    Lend
-                  </Text>
-                </ButtonLight>
-                {parseInt(lenderData?.lentAmount) > 0 ? (
-                  <ButtonSecondary disabled={lendValue === '0'} onClick={() => OnRevokeLend(lendValue)}>
-                    <Text fontSize={20} fontWeight={500}>
-                      Revoke
-                    </Text>
-                  </ButtonSecondary>
+                {loanMode ? (
+                  <>
+                    <ButtonLight disabled={lendValue === '0' || lendValue === ''} onClick={() => OnAddLend(lendValue)}>
+                      <Text fontSize={20} fontWeight={500}>
+                        Lend
+                      </Text>
+                    </ButtonLight>
+                    {parseInt(lenderData?.lentAmount) > 0 ? (
+                      <ButtonSecondary disabled={lendValue === '0'} onClick={() => OnRevokeLend(lendValue)}>
+                        <Text fontSize={20} fontWeight={500}>
+                          Revoke
+                        </Text>
+                      </ButtonSecondary>
+                    ) : (
+                      ''
+                    )}
+                  </>
                 ) : (
-                  ''
+                  <>
+                    <ButtonLight disabled={lendValue === '0' || lendValue === ''} onClick={() => OnAddLend(lendValue)}>
+                      <Text fontSize={20} fontWeight={500}>
+                        Borrow
+                      </Text>
+                    </ButtonLight>
+                    {parseInt(lenderData?.lentAmount) > 0 ? (
+                      <ButtonSecondary disabled={lendValue === '0'} onClick={() => OnRevokeLend(lendValue)}>
+                        <Text fontSize={20} fontWeight={500}>
+                          Pay EMI
+                        </Text>
+                      </ButtonSecondary>
+                    ) : (
+                      ''
+                    )}
+                  </>
                 )}
+
+                <div style={{ width: '100%', display: 'flex', alignContent: 'center', justifyContent: 'center' }}>
+                  <p onClick={() => setLoanMode(!loanMode)}>
+                    {/* eslint-disable-next-line react/no-unescaped-entities  */}
+                    Don't want to lend? Borrow instead
+                  </p>
+                </div>
               </AutoColumn>
             )}
           </AutoColumn>

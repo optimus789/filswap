@@ -11,17 +11,12 @@ import CountUp from 'react-countup'
 import { formatEther } from '@ethersproject/units'
 
 export function PoolPriceBar({
-  currencies,
-  noLiquidity,
-  poolTokenPercentage,
-  price,
+  loanMode,
   contractData,
   lenderData
 }: {
-  currencies: { [field in Field]?: Currency }
-  noLiquidity?: boolean
-  poolTokenPercentage?: Percent
-  price?: Price
+  loanMode?: boolean
+
   contractData?: any
   lenderData?: any
 }) {
@@ -55,31 +50,59 @@ export function PoolPriceBar({
 
   return (
     <AutoColumn gap="md">
-      <AutoRow justify="space-around" gap="4px">
-        <AutoColumn justify="center">
-          {/* <TYPE.black>{price?.toSignificant(6) ?? '-'}</TYPE.black> */}
-          <CountUp separator="  " decimals={3} decimal="." prefix="TFIL " end={myLent} />
-          <Text fontWeight={500} fontSize={14} color={theme.text2} pt={1}>
-            Your Lent
-          </Text>
-        </AutoColumn>
-        <AutoColumn justify="center">
-          {/* <TYPE.black>{price?.invert()?.toSignificant(6) ?? '-'}</TYPE.black> */}
+      {loanMode ? (
+        <AutoRow justify="space-around" gap="4px">
+          <AutoColumn justify="center">
+            {/* <TYPE.black>{price?.toSignificant(6) ?? '-'}</TYPE.black> */}
+            <CountUp separator="  " decimals={3} decimal="." prefix="TFIL " end={myLent} />
+            <Text fontWeight={500} fontSize={14} color={theme.text2} pt={1}>
+              Your Lent
+            </Text>
+          </AutoColumn>
+          <AutoColumn justify="center">
+            {/* <TYPE.black>{price?.invert()?.toSignificant(6) ?? '-'}</TYPE.black> */}
 
-          <CountUp separator="  " decimals={3} decimal="." prefix="TFIL " end={poolSize} />
+            <CountUp separator="  " decimals={3} decimal="." prefix="TFIL " end={poolSize} />
 
-          <Text fontWeight={500} fontSize={14} color={theme.text2} pt={1}>
-            Pool Size
-            {/* {currencies[Field.CURRENCY_A]?.symbol} per {currencies[Field.CURRENCY_B]?.symbol} */}
-          </Text>
-        </AutoColumn>
-        <AutoColumn justify="center">
-          <CountUp separator="  " decimals={2} decimal="." suffix=" %" end={(myLent / poolSize) * 100} />
-          <Text fontWeight={500} fontSize={14} color={theme.text2} pt={1}>
-            Share of Pool
-          </Text>
-        </AutoColumn>
-      </AutoRow>
+            <Text fontWeight={500} fontSize={14} color={theme.text2} pt={1}>
+              Pool Size
+              {/* {currencies[Field.CURRENCY_A]?.symbol} per {currencies[Field.CURRENCY_B]?.symbol} */}
+            </Text>
+          </AutoColumn>
+          <AutoColumn justify="center">
+            <CountUp separator="  " decimals={2} decimal="." suffix=" %" end={(myLent / poolSize) * 100} />
+            <Text fontWeight={500} fontSize={14} color={theme.text2} pt={1}>
+              Share of Pool
+            </Text>
+          </AutoColumn>
+        </AutoRow>
+      ) : (
+        <AutoRow justify="space-around" gap="4px">
+          <AutoColumn justify="center">
+            {/* <TYPE.black>{price?.toSignificant(6) ?? '-'}</TYPE.black> */}
+            <CountUp separator="  " decimals={3} decimal="." prefix="TFIL " end={myLent} />
+            <Text fontWeight={500} fontSize={14} color={theme.text2} pt={1}>
+              Your Debt
+            </Text>
+          </AutoColumn>
+          <AutoColumn justify="center">
+            {/* <TYPE.black>{price?.invert()?.toSignificant(6) ?? '-'}</TYPE.black> */}
+
+            <CountUp separator="  " decimals={3} decimal="." prefix="TFIL " end={poolSize} />
+
+            <Text fontWeight={500} fontSize={14} color={theme.text2} pt={1}>
+              EMI
+              {/* {currencies[Field.CURRENCY_A]?.symbol} per {currencies[Field.CURRENCY_B]?.symbol} */}
+            </Text>
+          </AutoColumn>
+          <AutoColumn justify="center">
+            <CountUp separator="  " decimals={2} decimal="." suffix=" %" end={(myLent / poolSize) * 100} />
+            <Text fontWeight={500} fontSize={14} color={theme.text2} pt={1}>
+              Duration
+            </Text>
+          </AutoColumn>
+        </AutoRow>
+      )}
     </AutoColumn>
   )
 }

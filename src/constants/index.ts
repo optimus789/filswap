@@ -315,5 +315,5 @@ export const networks = [
   // }
 ]
 
-export const LOAN_CONTRACT = '0xACF970fb1cfe2AeeaA391E90e2B269E08CEA1faB'
+export const LOAN_CONTRACT = '0x8d9b7277959A35bFa1b784D16e68e1D732c80DB2'
 export const GARGANTUA_TOKEN = '0xC0f020c8cF91Ca8C4df61145Ac92Ad1f87a27d06'

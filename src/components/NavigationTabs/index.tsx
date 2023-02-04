@@ -103,7 +103,13 @@ export function AddRemoveTabs({ adding, creating, loan }: { adding: boolean; cre
           <StyledArrowLeft />
         </HistoryLink>
         <ActiveText>
-          {loan ? 'Loan' : creating ? 'Create a pair' : adding && !loan ? 'Add Liquidity' : 'Remove Liquidity'}
+          {loan
+            ? 'Loan'
+            : 'Borrow' && creating
+            ? 'Create a pair'
+            : adding && !loan
+            ? 'Add Liquidity'
+            : 'Remove Liquidity'}
         </ActiveText>
         <Settings />
       </RowBetween>
