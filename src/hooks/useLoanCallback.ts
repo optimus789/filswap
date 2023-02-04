@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useActiveWeb3React } from './index'
 import { useLoanContract } from './useContract'
 import { callRpc } from 'utils/loanUtils'
+import { parseEther } from 'ethers/lib/utils'
 
 export function useContractDataCallback(): [any] {
   const loanContract = useLoanContract()
@@ -166,8 +167,9 @@ export function useLendAmountCallback(value?: string): [any, () => Promise<void>
       return
     }
     console.log('Value is: ', value)
+
     return loanContract
-      ?.lendAmount({ value: value })
+      ?.lendAmount({ value: parseEther(value) })
       .then((response: any) => {
         console.log('This is the response of lendAmount: ', response)
         // lendState.lendAmount = response[0]._hex

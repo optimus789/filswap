@@ -42,6 +42,39 @@ import { PoolPriceBar } from './PoolPriceBar'
 import { useIsTransactionUnsupported } from 'hooks/Trades'
 import UnsupportedCurrencyFooter from 'components/swap/UnsupportedCurrencyFooter'
 import { useContractDataCallback, useLendAmountCallback, useLenderAmountCallback } from 'hooks/useLoanCallback'
+import styled from 'styled-components'
+import { darken } from 'polished'
+import { Input as NumericalInput } from '../../components/LoanInput'
+const StyledInput = styled.input<{ error?: boolean; fontSize?: string; align?: string }>`
+  color: ${({ error, theme }) => (error ? theme.red1 : theme.text1)};
+  width: 0;
+  position: relative;
+  font-weight: 500;
+  outline: none;
+  border: none;
+  flex: 1 1 auto;
+  background-color: ${({ theme }) => theme.bg1};
+  font-size: ${({ fontSize }) => fontSize ?? '24px'};
+  text-align: ${({ align }) => align && align};
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0px;
+  -webkit-appearance: textfield;
+
+  [type='number'] {
+    -moz-appearance: textfield;
+  }
+
+  ::-webkit-outer-spin-button,
+  ::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+  }
+
+  ::placeholder {
+    color: ${({ theme }) => theme.text4};
+  }
+`
 export default function Loan({
   match: {
     params: { currencyIdA, currencyIdB }
@@ -124,13 +157,15 @@ export default function Loan({
   // check whether the user has approved the router on the tokens
   const [approvalA, approveACallback] = useApproveCallback(parsedAmounts[Field.CURRENCY_A], ROUTER_ADDRESS)
   const [approvalB, approveBCallback] = useApproveCallback(parsedAmounts[Field.CURRENCY_B], ROUTER_ADDRESS)
+  const [lendValue, setLendValue] = useState<string>('0')
 
   const [contractData] = useContractDataCallback()
   const [lenderData] = useLenderAmountCallback()
-  const [lend, lendCallback] = useLendAmountCallback(formattedInput)
-
   const addTransaction = useTransactionAdder()
 
+  async function OnAddLend(lendValue: string) {
+    const [lend, lendCallback] = useLendAmountCallback(lendValue)
+  }
   async function onAdd() {
     if (!chainId || !library || !account) return
     const router = getRouterContract(chainId, library, account)
@@ -216,6 +251,48 @@ export default function Loan({
         }
       })
   }
+
+  const InputPanel = styled.div<{ hideInput?: boolean }>`
+    ${({ theme }) => theme.flexColumnNoWrap}
+    position: relative;
+    border-radius: ${({ hideInput }) => (hideInput ? '8px' : '20px')};
+    background-color: ${({ theme }) => theme.bg2};
+    z-index: 1;
+  `
+  const Container = styled.div<{ hideInput: boolean }>`
+    border-radius: ${({ hideInput }) => (hideInput ? '8px' : '20px')};
+    border: 1px solid ${({ theme }) => theme.bg2};
+    background-color: ${({ theme }) => theme.bg1};
+  `
+
+  const LabelRow = styled.div`
+    ${({ theme }) => theme.flexRowNoWrap}
+    align-items: center;
+    color: ${({ theme }) => theme.text1};
+    font-size: 0.75rem;
+    line-height: 1rem;
+    padding: 0.75rem 1rem 0 1rem;
+    span:hover {
+      cursor: pointer;
+      color: ${({ theme }) => darken(0.2, theme.text2)};
+    }
+  `
+
+  const InputRow = styled.div<{ selected: boolean }>`
+    ${({ theme }) => theme.flexRowNoWrap}
+    align-items: center;
+    padding: ${({ selected }) => (selected ? '0.75rem 0.5rem 0.75rem 1rem' : '0.75rem 0.75rem 0.75rem 1rem')};
+  `
+
+  const LoanInput = styled.input`
+    color: ${({ theme }) => (error ? theme.red1 : theme.text1)};
+    width: 0;
+    position: relative;
+    font-weight: 500;
+    outline: none;
+    border: none;
+    flex: 1 1 auto;
+  `
 
   const modalHeader = () => {
     return noLiquidity ? (
@@ -369,6 +446,35 @@ export default function Loan({
                   </BlueCard>
                 </ColumnCenter>
               ))}
+            <InputPanel id={'lendAmount'}>
+              <Container hideInput={false}>
+                <LabelRow>
+                  <RowBetween>
+                    <TYPE.body color={theme.text2} fontWeight={500} fontSize={14}>
+                      Input
+                    </TYPE.body>
+                    {/* {account && (
+                      <TYPE.body
+                        color={theme.text2}
+                        fontWeight={500}
+                        fontSize={14}
+                        style={{ display: 'inline', cursor: 'pointer' }}
+                      >
+                        Balance:
+                      </TYPE.body>
+                    )} */}
+                  </RowBetween>
+                </LabelRow>
+                <InputRow selected={true}>
+                  <StyledInput
+                    className="token-amount-input"
+                    value={lendValue}
+                    placeholder={'0.0'}
+                    onChange={event => setLendValue(event.target.value || '')}
+                  />
+                </InputRow>
+              </Container>
+            </InputPanel>
             <CurrencyInputPanel
               value={formattedAmounts[Field.CURRENCY_A]}
               onUserInput={onFieldAInput}
@@ -433,15 +539,7 @@ export default function Loan({
                     {error ?? 'Supply'}
                   </Text>
                 </ButtonError> */}
-                <ButtonLight
-                  onClick={
-                    formattedInput
-                      ? lendCallback
-                      : () => {
-                          console.log(formattedInput)
-                        }
-                  }
-                >
+                <ButtonLight disabled={lendValue === '0'} onClick={() => OnAddLend(lendValue)}>
                   <Text fontSize={20} fontWeight={500}>
                     Lend
                   </Text>
