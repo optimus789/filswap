@@ -208,7 +208,7 @@ export default function Loan({
     // check accountAddress for Gargantua token balance and allowance of lendValue amount and approve the LOAN_CONTRACT to spend the lendValue amount if not already approved
     const gargantuaBalance = await gargantuaContract.balanceOf(accountAddress)
     const gargantuaAllowance = await gargantuaContract.allowance(accountAddress, LOAN_CONTRACT)
-    console.log('Balance and allowance: ', gargantuaBalance, gargantuaAllowance)
+    console.log('Balance and allowance: ', gargantuaBalance, gargantuaAllowance, parseInt(parseEther(lendValue)._hex))
     if (parseInt(gargantuaBalance?._hex) < parseInt(parseEther(lendValue)._hex)) {
       console.log('Insufficient Gargantua token balance')
       return
