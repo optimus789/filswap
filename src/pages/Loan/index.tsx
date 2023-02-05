@@ -577,7 +577,7 @@ export default function Loan({
   return (
     <>
       <AppBody>
-        <AddRemoveTabs creating={isCreate} adding={false} loan={loanMode} />
+        <AddRemoveTabs creating={isCreate} adding={false} loan={loanMode} borrow={!loanMode} />
         <Wrapper>
           <TransactionConfirmationModal
             isOpen={showConfirm}

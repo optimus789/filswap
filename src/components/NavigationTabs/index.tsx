@@ -11,6 +11,7 @@ import Settings from '../Settings'
 import { useDispatch } from 'react-redux'
 import { AppDispatch } from 'state'
 import { resetMintState } from 'state/mint/actions'
+import { functions } from 'lodash'
 
 const Tabs = styled.div`
   ${({ theme }) => theme.flexRowNoWrap}
@@ -87,7 +88,17 @@ export function FindPoolTabs() {
   )
 }
 
-export function AddRemoveTabs({ adding, creating, loan }: { adding: boolean; creating: boolean; loan: boolean }) {
+export function AddRemoveTabs({
+  adding,
+  creating,
+  loan,
+  borrow
+}: {
+  adding: boolean
+  creating: boolean
+  loan: boolean
+  borrow?: boolean
+}) {
   // reset states on back
   const dispatch = useDispatch<AppDispatch>()
 
@@ -103,7 +114,16 @@ export function AddRemoveTabs({ adding, creating, loan }: { adding: boolean; cre
           <StyledArrowLeft />
         </HistoryLink>
         <ActiveText>
-          {loan ? 'Loan' : 'Borrow' && creating ? 'Create a pair' : adding ? 'Add Liquidity' : 'Remove Liquidity'}
+          {loan
+            ? 'Loan'
+            : borrow
+            ? 'Borrow'
+            : creating
+            ? 'Create a pair'
+            : adding
+            ? 'Add Liquidity'
+            : 'Remove Liquidity'}
+          {/* {getName({ adding, creating, loan, borrow })} */}
         </ActiveText>
         <Settings />
       </RowBetween>
