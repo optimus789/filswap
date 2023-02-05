@@ -82,6 +82,24 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "uint64",
+        "name": "actorId",
+        "type": "uint64"
+      },
+      {
+        "internalType": "uint64",
+        "name": "dealId",
+        "type": "uint64"
+      }
+    ],
+    "name": "checkActorandDeal",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "contractPublicData",
     "outputs": [
@@ -293,16 +311,47 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "returnedActorId",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "uint256",
         "name": "interestAmount",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "revokeLendAmount",
         "type": "uint256"
       }
     ],
     "name": "revokeLend",
     "outputs": [],
     "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint64",
+        "name": "actorId",
+        "type": "uint64"
+      }
+    ],
+    "name": "setCloseLoan",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -316,6 +365,13 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "withdraw",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   }
 ]

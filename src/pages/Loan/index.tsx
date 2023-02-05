@@ -2,7 +2,7 @@ import { BigNumber } from '@ethersproject/bignumber'
 
 import { TransactionResponse, Web3Provider } from '@ethersproject/providers'
 import { Currency, currencyEquals, ETHER, TokenAmount, WETH } from '@uniswap/sdk'
-import React, { useCallback, useContext, useEffect, useState } from 'react'
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react'
 import { Plus } from 'react-feather'
 import ReactGA from 'react-ga'
 import { RouteComponentProps } from 'react-router-dom'
@@ -45,7 +45,7 @@ import { useContractDataCallback, useLendAmountCallback, useLenderAmountCallback
 import styled from 'styled-components'
 import { darken } from 'polished'
 import { Input as NumericalInput } from '../../components/LoanInput'
-import { parseEther } from 'ethers/lib/utils'
+import { hexlify, parseEther } from 'ethers/lib/utils'
 import loanAbi from '../../constants/abis/loan-rewarder.json'
 import gargantuaAbi from '../../constants/abis/gargantuaErc20.json'
 
@@ -79,6 +79,59 @@ const StyledInput = styled.input<{ error?: boolean; fontSize?: string; align?: s
     color: ${({ theme }) => theme.text4};
   }
 `
+
+const InputPanel = styled.div<{ hideInput?: boolean }>`
+  ${({ theme }) => theme.flexColumnNoWrap}
+  position: relative;
+  border-radius: ${({ hideInput }) => (hideInput ? '8px' : '20px')};
+  background-color: ${({ theme }) => theme.bg2};
+  z-index: 1;
+`
+const Container = styled.div<{ hideInput: boolean }>`
+  border-radius: ${({ hideInput }) => (hideInput ? '8px' : '20px')};
+  border: 1px solid ${({ theme }) => theme.bg2};
+  background-color: ${({ theme }) => theme.bg1};
+`
+
+const LabelRow = styled.div`
+  ${({ theme }) => theme.flexRowNoWrap}
+  align-items: center;
+  color: ${({ theme }) => theme.text1};
+  font-size: 0.75rem;
+  line-height: 1rem;
+  padding: 0.75rem 1rem 0 1rem;
+  span:hover {
+    cursor: pointer;
+    color: ${({ theme }) => darken(0.2, theme.text2)};
+  }
+`
+
+const InputRow = styled.div<{ selected: boolean }>`
+  ${({ theme }) => theme.flexRowNoWrap}
+  align-items: center;
+  padding: ${({ selected }) => (selected ? '0.75rem 0.5rem 0.75rem 1rem' : '0.75rem 0.75rem 0.75rem 1rem')};
+`
+
+// const LoanInput = styled.input`
+//   color: ${({ theme }) => (error ? theme.red1 : theme.text1)};
+//   width: 0;
+//   position: relative;
+//   font-weight: 500;
+//   outline: none;
+//   border: none;
+//   flex: 1 1 auto;
+// `
+
+// const styledInputFn = ({ className, value, placeholder }) => {
+//   return (
+//     <StyledInput
+//       className={className}
+//       value={value}
+//       placeholder={placeholder}
+//       onChange={event => setActorID(event.target.value || '')}
+//     />
+//   )
+// }
 export default function Loan({
   match: {
     params: { currencyIdA, currencyIdB }
@@ -191,6 +244,43 @@ export default function Loan({
     const web3Provider = new Web3Provider(window.ethereum)
     setWeb3Provider(web3Provider)
   }, [])
+  // function to take loanContract as input and call the borrowerData() function and return all the details
+  async function getBorrowerData(actorID: string) {
+    if (!web3Provider && !accountAddress && actorID !== '0') return
+    console.log('Check actorID: ', actorID)
+    const loanContract = getContract(LOAN_CONTRACT, loanAbi, web3Provider, accountAddress)
+    const borrowerData = await loanContract.borrowerData(actorID)
+    console.log('borrowerData Called : ', borrowerData)
+    const borrowedAmount = parseInt(borrowerData[0]._hex)
+    const interestPercent = parseInt(borrowerData[1]._hex)
+    const emiAmount = borrowerData[2]
+    const returnedAmount = parseInt(borrowerData[3]._hex)
+    const currCreditFactor = parseInt(borrowerData[4]._hex)
+    const creditScore = parseInt(borrowerData[5]._hex)
+    const dealId = parseInt(borrowerData[6]._hex)
+    const loanPeriod = parseInt(borrowerData[7]._hex)
+    console.log(
+      'borrowedAmount, interestPercent, emiAmount, returnedAmount, currCreditFactor, creditScore, dealId, loanPeriod: ',
+      borrowedAmount,
+      interestPercent,
+      emiAmount,
+      returnedAmount,
+      currCreditFactor,
+      creditScore,
+      dealId,
+      loanPeriod
+    )
+    return {
+      borrowedAmount,
+      interestPercent,
+      emiAmount,
+      returnedAmount,
+      currCreditFactor,
+      creditScore,
+      dealId,
+      loanPeriod
+    }
+  }
 
   async function OnAddLend(lendValue: string) {
     if (!web3Provider && !accountAddress && lendValue !== '0') return
@@ -208,12 +298,20 @@ export default function Loan({
     // check accountAddress for Gargantua token balance and allowance of lendValue amount and approve the LOAN_CONTRACT to spend the lendValue amount if not already approved
     const gargantuaBalance = await gargantuaContract.balanceOf(accountAddress)
     const gargantuaAllowance = await gargantuaContract.allowance(accountAddress, LOAN_CONTRACT)
-    console.log('Balance and allowance: ', gargantuaBalance, gargantuaAllowance, parseInt(parseEther(lendValue)._hex))
+    console.log(
+      'Balance and allowance: ',
+      gargantuaBalance,
+      gargantuaAllowance,
+      parseInt(parseEther(lendValue)._hex),
+      parseInt(gargantuaBalance?._hex),
+      parseInt(gargantuaAllowance?._hex)
+    )
+    console.log('Inside approve: ', lendValue, parseEther(lendValue))
     if (parseInt(gargantuaBalance?._hex) < parseInt(parseEther(lendValue)._hex)) {
       console.log('Insufficient Gargantua token balance')
       return
     }
-    if (parseInt(gargantuaBalance?._hex) < parseInt(parseEther(lendValue)._hex)) {
+    if (parseInt(gargantuaAllowance?._hex) < parseInt(parseEther(lendValue)._hex)) {
       const tx = await gargantuaContract.approve(LOAN_CONTRACT, parseEther(lendValue))
       await tx.wait()
       console.log('Gargantua token approved')
@@ -228,11 +326,59 @@ export default function Loan({
     console.log('totalInterestAmount Called : ', totalInterestAmount)
     const sharePercent = (lendedAmount * 100) / lendPool
     const interest = (sharePercent * totalInterestAmount) / 100
-    const amount = parseEther(lendValue)
-    const tx = await loanContract.revokeLend(interest, amount)
+    console.log('sharePercent and interest: ', sharePercent, interest)
+    const tx = await loanContract.revokeLend(interest, parseEther(lendValue))
     await tx.wait()
     console.log('Revoke successful!')
   }
+
+  async function OnBorrowAmount(actorID: string, dealID: string) {
+    try {
+      if (!web3Provider && !accountAddress && actorID !== '0' && dealID !== '0') return
+      console.log('Check actorID: ', actorID, ' Check dealID: ', dealID)
+      const loanPeriod = 6
+      const loanContract = getContract(LOAN_CONTRACT, loanAbi, web3Provider, accountAddress)
+      // call borrowerData() to get the borrower details like uint borrowedAmount;
+      // and check if the borrower has remaining borrowedAmount to stop from borrowing again
+      const borrowerData = await getBorrowerData(actorID)
+      console.log('borrowerData Called : ', borrowerData)
+      if (borrowerData && borrowerData?.borrowedAmount > 0) {
+        console.log('Borrower has already borrowed amount')
+        return
+      }
+      // call borrowAmount function to borrow the amount
+      const tx = await loanContract.borrowAmount(actorID, dealID, loanPeriod)
+      await tx.wait()
+      console.log('Borrow successful!')
+    } catch (error) {
+      console.log('Error in Borrowing: ', error)
+    }
+  }
+
+  async function OnPayEmi(actorID: string, dealID: string) {
+    if (!web3Provider && !accountAddress && actorID !== '0' && dealID !== '0') return
+    console.log('Check actorID: ', actorID, 'Check dealID: ', dealID)
+    const loanContract = getContract(LOAN_CONTRACT, loanAbi, web3Provider, accountAddress)
+
+    // call borrowerData() to get the borrower details like uint borrowedAmount;
+    const borrowerData = await getBorrowerData(actorID)
+    console.log('borrowerData Called : ', borrowerData)
+    // check if the borrower.borrowedAmount is greater than 0 to let the borrower pay the emi also check if borrower.borrowedAmount > borrower.emiAmount to stop the borrower from paying more than the emiAmount in 2 different if loops
+    if (borrowerData && borrowerData?.borrowedAmount > 0) {
+      if (borrowerData?.borrowedAmount > parseInt(borrowerData?.emiAmount._hex)) {
+        const tx = await loanContract.payEmi(actorID, dealID, {
+          value: borrowerData?.emiAmount
+        })
+        const res = await tx.wait()
+        console.log('Emi paid successfully!', res)
+      } else {
+        const tx = await loanContract.setCloseLoan(actorID, dealID)
+        const res = await tx.wait()
+        console.log('Borrower has already paid the emi', res)
+      }
+    }
+  }
+
   async function onAdd() {
     if (!chainId || !library || !account) return
     const router = getRouterContract(chainId, library, account)
@@ -318,48 +464,6 @@ export default function Loan({
         }
       })
   }
-
-  const InputPanel = styled.div<{ hideInput?: boolean }>`
-    ${({ theme }) => theme.flexColumnNoWrap}
-    position: relative;
-    border-radius: ${({ hideInput }) => (hideInput ? '8px' : '20px')};
-    background-color: ${({ theme }) => theme.bg2};
-    z-index: 1;
-  `
-  const Container = styled.div<{ hideInput: boolean }>`
-    border-radius: ${({ hideInput }) => (hideInput ? '8px' : '20px')};
-    border: 1px solid ${({ theme }) => theme.bg2};
-    background-color: ${({ theme }) => theme.bg1};
-  `
-
-  const LabelRow = styled.div`
-    ${({ theme }) => theme.flexRowNoWrap}
-    align-items: center;
-    color: ${({ theme }) => theme.text1};
-    font-size: 0.75rem;
-    line-height: 1rem;
-    padding: 0.75rem 1rem 0 1rem;
-    span:hover {
-      cursor: pointer;
-      color: ${({ theme }) => darken(0.2, theme.text2)};
-    }
-  `
-
-  const InputRow = styled.div<{ selected: boolean }>`
-    ${({ theme }) => theme.flexRowNoWrap}
-    align-items: center;
-    padding: ${({ selected }) => (selected ? '0.75rem 0.5rem 0.75rem 1rem' : '0.75rem 0.75rem 0.75rem 1rem')};
-  `
-
-  const LoanInput = styled.input`
-    color: ${({ theme }) => (error ? theme.red1 : theme.text1)};
-    width: 0;
-    position: relative;
-    font-weight: 500;
-    outline: none;
-    border: none;
-    flex: 1 1 auto;
-  `
 
   const modalHeader = () => {
     return noLiquidity ? (
@@ -534,8 +638,8 @@ export default function Loan({
                     <StyledInput
                       className="token-amount-input"
                       value={lendValue}
-                      placeholder={'0.0'}
-                      onChange={event => setLendValue(event.target.value || '')}
+                      placeholder={'0.1'}
+                      onChange={(event: any) => setLendValue(event.target.value || '')}
                     />
                   </InputRow>
                 </Container>
@@ -652,20 +756,23 @@ export default function Loan({
                   </>
                 ) : (
                   <>
-                    <ButtonLight disabled={lendValue === '0' || lendValue === ''} onClick={() => OnAddLend(lendValue)}>
+                    <ButtonLight
+                      disabled={actorID === '0' || dealID === '' || actorID === '' || dealID === '0'}
+                      onClick={() => OnBorrowAmount(actorID, dealID)}
+                    >
                       <Text fontSize={20} fontWeight={500}>
                         Borrow
                       </Text>
                     </ButtonLight>
-                    {parseInt(lenderData?.lentAmount) > 0 ? (
-                      <ButtonSecondary disabled={lendValue === '0'} onClick={() => OnRevokeLend(lendValue)}>
-                        <Text fontSize={20} fontWeight={500}>
-                          Pay EMI
-                        </Text>
-                      </ButtonSecondary>
-                    ) : (
-                      ''
-                    )}
+
+                    <ButtonSecondary
+                      disabled={actorID === '0' || dealID === '' || actorID === '' || dealID === '0'}
+                      onClick={() => OnPayEmi(actorID, dealID)}
+                    >
+                      <Text fontSize={20} fontWeight={500}>
+                        Pay EMI
+                      </Text>
+                    </ButtonSecondary>
                   </>
                 )}
 
