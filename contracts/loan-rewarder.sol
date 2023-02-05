@@ -30,9 +30,11 @@ contract loanRewarder {
     }
 
     uint public lendPool;
+    uint public loanPool;
     uint public lenderCount;
     uint public totalInterestAmount;
     uint public returnedActorId;
+
     mapping(uint64 => BorrowerLedger) public borrowerData;
     
     struct LentLedger {
@@ -56,6 +58,7 @@ contract loanRewarder {
         }
         lenderData[msg.sender].lentAmount += msg.value;
         lendPool += msg.value;
+        loanPool += msg.value;
     }
 
     function checkActorandDeal(uint64 actorId, uint64 dealId) public {
@@ -81,17 +84,19 @@ contract loanRewarder {
         borrowerData[actorId].interestPercent = interestPercent;
         borrowerData[actorId].loanPeriod = loanPeriod;
         uint loanAmount = 1000000000000000000 + (100000000000000000*creditFactor);
+        require(loanAmount < loanPool, "LoanPool is dry ");
         uint interestAmount = getPercentageOf(loanAmount, interestPercent);
         send(actorId, loanAmount);
         borrowerData[actorId].borrowedAmount += (loanAmount+interestAmount);
         borrowerData[actorId].emiAmount = uint(borrowerData[actorId].borrowedAmount) / loanPeriod;
+        loanPool -= loanAmount;
     }
     
-    function payEmi(uint64 actorId, uint64 dealId) public payable{
+    function payEmi(uint64 actorId) public payable{
         require(borrowerData[actorId].borrowedAmount > 0, "Already paid, now rest or request for another Loan");
         require(borrowerData[actorId].emiAmount == msg.value, "Wrong value for paying Emi");
-        MarketTypes.GetDealProviderReturn memory providerRet = MarketAPI.getDealProvider(MarketTypes.GetDealProviderParams({id: dealId}));
-        require(providerRet.provider == actorId, "Wrong Actor Id for given deal ID ");
+        // MarketTypes.GetDealProviderReturn memory providerRet = MarketAPI.getDealProvider(MarketTypes.GetDealProviderParams({id: dealId}));
+        // require(providerRet.provider == actorId, "Wrong Actor Id for given deal ID ");
         uint actorScore = borrowerData[actorId].creditScore;
         uint newCreditFactor = uint(actorScore)/100;
         uint currCreditFactor = borrowerData[actorId].currCreditFactor;
@@ -104,6 +109,7 @@ contract loanRewarder {
         borrowerData[actorId].borrowedAmount = borrowerData[actorId].borrowedAmount - msg.value;
         borrowerData[actorId].returnedAmount += msg.value;
         borrowerData[actorId].creditScore += 20;
+        loanPool += msg.value;
     }
 
     function setCloseLoan(uint64 actorId) public{
@@ -111,27 +117,33 @@ contract loanRewarder {
         borrowerData[actorId].borrowedAmount = 0;
     }
 
+    function setCreditScore(uint64 actorId, uint creditScore) public {
+        require(msg.sender == owner, "Only owner will call");
+        borrowerData[actorId].creditScore = creditScore;
+    }
+
+
     function getEmiData(uint64 actorId) public view returns(uint,uint){
         return (borrowerData[actorId].emiAmount, borrowerData[actorId].borrowedAmount);
     }
 
-    function contractPublicData() public view returns(uint,uint,uint){
-        return (lendPool, lenderCount, totalInterestAmount);
+    function contractPublicData() public view returns(uint,uint,uint,uint){
+        return (lendPool, loanPool, lenderCount, totalInterestAmount);
     }
 
-    function getLenderData(address lender, uint sharePercent) public view returns(uint,uint,uint){
+    function getLenderData(address lender, uint sharePercent) public view returns(uint,uint,uint,uint){
         uint amount = lenderData[lender].lentAmount;
         uint interestAmount = getPercentageOf(totalInterestAmount, sharePercent);
-        return (amount, lendPool, interestAmount);
+        return (amount, lendPool, loanPool, interestAmount);
     }
 
     function withdraw() public {
         payable(owner).transfer(address(this).balance);
     }
 
-    function getLenderAmount(address lender) public view returns(uint,uint){
+    function getLenderAmount(address lender) public view returns(uint,uint,uint){
         uint amount = lenderData[lender].lentAmount;
-        return (amount, lendPool);
+        return (amount, lendPool, loanPool);
     }
 
     // used in Percentage conversion.
@@ -141,11 +153,15 @@ contract loanRewarder {
 
     function revokeLend(uint interestAmount, uint revokeLendAmount) public payable{
         require(lenderData[msg.sender].lentAmount == revokeLendAmount, "Please send the total lent amount");
+        require(revokeLendAmount + interestAmount < loanPool, "Loan Pool is Dry");
+        require(revokeLendAmount + interestAmount < lendPool, "Lend Pool is Dry");
         require(totalInterestAmount >= interestAmount, "Wrong interest amount entered");
         IERC20(0xC0f020c8cF91Ca8C4df61145Ac92Ad1f87a27d06).transferFrom(msg.sender, 0xb7e0BD7F8EAe0A33f968a1FfB32DE07C749c7390, revokeLendAmount);
         payable(msg.sender).transfer(revokeLendAmount + interestAmount);
         lenderData[msg.sender].lentAmount -= revokeLendAmount;
         totalInterestAmount -= interestAmount;
+        lendPool -= revokeLendAmount + interestAmount;
+        loanPool -= revokeLendAmount + interestAmount;
     }
 
     // send 1 FIL to the filecoin actor at actor_id

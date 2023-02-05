@@ -216,6 +216,7 @@ export default function Loan({
   const [approvalB, approveBCallback] = useApproveCallback(parsedAmounts[Field.CURRENCY_B], ROUTER_ADDRESS)
   const [lendValue, setLendValue] = useState<string>('0')
   const [actorID, setActorID] = useState<string>('0')
+  const [actorData, setActorData] = useState<any>()
 
   const [dealID, setDealID] = useState<string>('0')
 
@@ -332,6 +333,16 @@ export default function Loan({
     console.log('Revoke successful!')
   }
 
+  async function fetchActorDetails(actorID: string) {
+    console.log('Fetching Actor Details...')
+    setActorID(actorID)
+    if (actorID.length > 3) {
+      const borrowerData = await getBorrowerData(actorID)
+      setActorData(borrowerData)
+      console.log('borrowerData Called : ', borrowerData)
+    }
+  }
+
   async function OnBorrowAmount(actorID: string, dealID: string) {
     try {
       if (!web3Provider && !accountAddress && actorID !== '0' && dealID !== '0') return
@@ -355,9 +366,9 @@ export default function Loan({
     }
   }
 
-  async function OnPayEmi(actorID: string, dealID: string) {
-    if (!web3Provider && !accountAddress && actorID !== '0' && dealID !== '0') return
-    console.log('Check actorID: ', actorID, 'Check dealID: ', dealID)
+  async function OnPayEmi(actorID: string) {
+    if (!web3Provider && !accountAddress && actorID !== '0') return
+    console.log('Check actorID: ', actorID)
     const loanContract = getContract(LOAN_CONTRACT, loanAbi, web3Provider, accountAddress)
 
     // call borrowerData() to get the borrower details like uint borrowedAmount;
@@ -366,13 +377,13 @@ export default function Loan({
     // check if the borrower.borrowedAmount is greater than 0 to let the borrower pay the emi also check if borrower.borrowedAmount > borrower.emiAmount to stop the borrower from paying more than the emiAmount in 2 different if loops
     if (borrowerData && borrowerData?.borrowedAmount > 0) {
       if (borrowerData?.borrowedAmount > parseInt(borrowerData?.emiAmount._hex)) {
-        const tx = await loanContract.payEmi(actorID, dealID, {
+        const tx = await loanContract.payEmi(actorID, {
           value: borrowerData?.emiAmount
         })
         const res = await tx.wait()
         console.log('Emi paid successfully!', res)
       } else {
-        const tx = await loanContract.setCloseLoan(actorID, dealID)
+        const tx = await loanContract.setCloseLoan(actorID)
         const res = await tx.wait()
         console.log('Borrower has already paid the emi', res)
       }
@@ -566,7 +577,7 @@ export default function Loan({
   return (
     <>
       <AppBody>
-        <AddRemoveTabs creating={isCreate} adding={true} loan={loanMode} />
+        <AddRemoveTabs creating={isCreate} adding={false} loan={loanMode} />
         <Wrapper>
           <TransactionConfirmationModal
             isOpen={showConfirm}
@@ -670,19 +681,20 @@ export default function Loan({
                         className="token-amount-input"
                         value={actorID}
                         placeholder={'0'}
-                        onChange={event => setActorID(event.target.value || '')}
+                        onChange={event => fetchActorDetails(event.target.value || '')}
                       />
                     </InputRow>
                   </Container>
                 </InputPanel>
-                <InputPanel id={'dealID'}>
-                  <Container hideInput={false}>
-                    <LabelRow>
-                      <RowBetween>
-                        <TYPE.body color={theme.text2} fontWeight={500} fontSize={14}>
-                          Deal ID
-                        </TYPE.body>
-                        {/* {account && (
+                {actorID?.length > 2 ? (
+                  <InputPanel id={'dealID'}>
+                    <Container hideInput={false}>
+                      <LabelRow>
+                        <RowBetween>
+                          <TYPE.body color={theme.text2} fontWeight={500} fontSize={14}>
+                            Deal ID
+                          </TYPE.body>
+                          {/* {account && (
                      <TYPE.body
                        color={theme.text2}
                        fontWeight={500}
@@ -692,18 +704,19 @@ export default function Loan({
                        Balance:
                      </TYPE.body>
                    )} */}
-                      </RowBetween>
-                    </LabelRow>
-                    <InputRow selected={true}>
-                      <StyledInput
-                        className="token-amount-input"
-                        value={dealID}
-                        placeholder={'0'}
-                        onChange={event => setDealID(event.target.value || '')}
-                      />
-                    </InputRow>
-                  </Container>
-                </InputPanel>
+                        </RowBetween>
+                      </LabelRow>
+                      <InputRow selected={true}>
+                        <StyledInput
+                          className="token-amount-input"
+                          value={dealID}
+                          placeholder={'0'}
+                          onChange={event => setDealID(event.target.value || '')}
+                        />
+                      </InputRow>
+                    </Container>
+                  </InputPanel>
+                ) : null}
               </>
             )}
 
@@ -712,11 +725,25 @@ export default function Loan({
                 <LightCard padding="0px" borderRadius={'20px'}>
                   <RowBetween padding="1rem">
                     <TYPE.subHeader fontWeight={500} fontSize={14}>
-                      {noLiquidity ? 'Initial prices' : 'Prices'} and pool share
+                      {!loanMode ? 'Debt and Loan Details' : 'Pool Share'}
                     </TYPE.subHeader>
                   </RowBetween>{' '}
                   <LightCard padding="1rem" borderRadius={'20px'}>
-                    <PoolPriceBar loanMode={loanMode} contractData={contractData} lenderData={lenderData} />
+                    {loanMode && contractData && lenderData ? (
+                      <PoolPriceBar
+                        loanMode={loanMode}
+                        contractData={contractData}
+                        lenderData={lenderData}
+                        borrowData={actorData}
+                      />
+                    ) : actorData && !loanMode ? (
+                      <PoolPriceBar
+                        loanMode={loanMode}
+                        contractData={contractData}
+                        lenderData={lenderData}
+                        borrowData={actorData}
+                      />
+                    ) : null}
                   </LightCard>
                 </LightCard>
               </>
@@ -756,31 +783,43 @@ export default function Loan({
                   </>
                 ) : (
                   <>
-                    <ButtonLight
-                      disabled={actorID === '0' || dealID === '' || actorID === '' || dealID === '0'}
-                      onClick={() => OnBorrowAmount(actorID, dealID)}
-                    >
-                      <Text fontSize={20} fontWeight={500}>
-                        Borrow
-                      </Text>
-                    </ButtonLight>
-
-                    <ButtonSecondary
-                      disabled={actorID === '0' || dealID === '' || actorID === '' || dealID === '0'}
-                      onClick={() => OnPayEmi(actorID, dealID)}
-                    >
-                      <Text fontSize={20} fontWeight={500}>
-                        Pay EMI
-                      </Text>
-                    </ButtonSecondary>
+                    {actorData && parseInt(actorData?.borrowedAmount) > 0 ? (
+                      <ButtonPrimary disabled={actorID.length < 3 || actorID === ''} onClick={() => OnPayEmi(actorID)}>
+                        <Text fontSize={20} fontWeight={500}>
+                          Pay EMI
+                        </Text>
+                      </ButtonPrimary>
+                    ) : (
+                      <ButtonLight
+                        disabled={
+                          actorID === '0' ||
+                          dealID === '' ||
+                          actorID === '' ||
+                          dealID === '0' ||
+                          parseInt(actorData?.borrowedAmount) > 0
+                        }
+                        onClick={() => OnBorrowAmount(actorID, dealID)}
+                      >
+                        <Text fontSize={20} fontWeight={500}>
+                          Borrow
+                        </Text>
+                      </ButtonLight>
+                    )}
                   </>
                 )}
 
                 <div style={{ width: '100%', display: 'flex', alignContent: 'center', justifyContent: 'center' }}>
-                  <p onClick={() => setLoanMode(!loanMode)}>
-                    {/* eslint-disable-next-line react/no-unescaped-entities  */}
-                    Don't want to lend? Borrow instead
-                  </p>
+                  {loanMode ? (
+                    <p onClick={() => setLoanMode(!loanMode)}>
+                      {/* eslint-disable-next-line react/no-unescaped-entities  */}
+                      Don't want to lend? Borrow instead
+                    </p>
+                  ) : (
+                    <p onClick={() => setLoanMode(!loanMode)}>
+                      {/* eslint-disable-next-line react/no-unescaped-entities  */}
+                      Don't want to Borrow? Lend instead
+                    </p>
+                  )}
                 </div>
               </AutoColumn>
             )}

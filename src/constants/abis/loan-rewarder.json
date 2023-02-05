@@ -117,6 +117,11 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -183,6 +188,11 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -203,6 +213,11 @@
     ],
     "name": "getLenderData",
     "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      },
       {
         "internalType": "uint256",
         "name": "",
@@ -281,6 +296,19 @@
   },
   {
     "inputs": [],
+    "name": "loanPool",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "owner",
     "outputs": [
       {
@@ -297,11 +325,6 @@
       {
         "internalType": "uint64",
         "name": "actorId",
-        "type": "uint64"
-      },
-      {
-        "internalType": "uint64",
-        "name": "dealId",
         "type": "uint64"
       }
     ],
@@ -350,6 +373,24 @@
       }
     ],
     "name": "setCloseLoan",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint64",
+        "name": "actorId",
+        "type": "uint64"
+      },
+      {
+        "internalType": "uint256",
+        "name": "creditScore",
+        "type": "uint256"
+      }
+    ],
+    "name": "setCreditScore",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

@@ -9,7 +9,8 @@ export function useContractDataCallback(): [any] {
   const loanContract = useLoanContract()
   const contractDataState = useMemo(() => {
     return {
-      lentAmount: 0,
+      lentPool: 0,
+      loanPool: 0,
       lentCount: 0,
       totalInterestAmount: 0,
       data: false
@@ -21,9 +22,12 @@ export function useContractDataCallback(): [any] {
       ?.contractPublicData()
       .then((response: any) => {
         console.log('This is the response: ', response)
-        contractDataState.lentAmount = response[0]._hex
-        contractDataState.lentCount = response[1]._hex
-        contractDataState.totalInterestAmount = response[2]._hex
+        contractDataState.lentPool = response[0]._hex
+        contractDataState.loanPool = response[1]._hex
+
+        contractDataState.lentCount = response[2]._hex
+        contractDataState.totalInterestAmount = response[3]._hex
+
         contractDataState.data = true
       })
       .catch((error: Error) => {
