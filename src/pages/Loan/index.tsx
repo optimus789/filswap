@@ -618,8 +618,11 @@ export default function Loan({
                   <BlueCard>
                     <AutoColumn gap="10px">
                       <TYPE.link fontWeight={400} color={'primaryText1'}>
-                        <b>Tips:</b> When you Lend Tokens, you will receive pool tokens representing your position. When
-                        you want to revoke your Lent amount this pool tokens will be deducted.
+                        <b>Tips:</b>{' '}
+                        {loanMode
+                          ? `When you Lend Tokens, you will receive pool tokens representing your position. When
+                        you want to revoke your Lent amount this pool tokens will be deducted.`
+                          : `When you Borrow Tokens, depending on you credit factor the amount of tFil will be borrowed from the Loan pool and you have to pay back the amount borrowed plus interest in 6 Easy Installments.`}
                       </TYPE.link>
                     </AutoColumn>
                   </BlueCard>
