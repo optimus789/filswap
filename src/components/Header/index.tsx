@@ -571,9 +571,9 @@ export default function Header() {
           {/* <StyledNavLink id={`stake-nav-link`} to={'/uni'}>
             UNI
           </StyledNavLink> */}
-          <StyledNavLink id={`stake-nav-link`} to={'/vote'}>
+          {/* <StyledNavLink id={`stake-nav-link`} to={'/vote'}>
             Vote
-          </StyledNavLink>
+          </StyledNavLink> */}
           <StyledNavLink id={`loan-nav-link`} to={'/loan'}>
             Loans
           </StyledNavLink>
