@@ -1,66 +1,8 @@
-# Uniswap Interface
+# FilSwap
+FilSwap is a decentralized finance (DeFi) platform that provides a suite of financial services, including swapping, decentralized exchange, liquidity management, and loans. These services are powered by the FVM, a next-generation virtual machine that enables smart contracts to be validated by storage deals. This provides a secure and efficient way to access financial services without relying on centralized intermediaries. With FilSwap, users have full control over their assets and can participate in the DeFi ecosystem with confidence. The platform's decentralized exchange allows for fast, low-cost trades, while the liquidity management system ensures that there are always enough assets available for swaps. The loan feature provides access to quick and flexible financing, while the swapping feature allows for seamless asset exchange. All transactions on FilSwap are conducted through smart contracts, ensuring transparency, security, and automation. The loan feature in FilSwap is a decentralized finance (DeFi) solution that enables users to take out loans using their storage space as collateral. The loans are validated and secured by storage deals on the Filecoin Virtual Machine (FVM). This allows users to access quick and easy loans without having to go through the traditional banking system. The loans can be used for a variety of purposes, such as paying bills, making investments, or covering hardware cost. The loan feature in FilSwap provides a transparent and secure way for users to access the funds they need while also utilizing their storage space in a profitable manner.
 
-[![Lint](https://github.com/Uniswap/uniswap-interface/workflows/Lint/badge.svg)](https://github.com/Uniswap/uniswap-interface/actions?query=workflow%3ALint)
-[![Tests](https://github.com/Uniswap/uniswap-interface/workflows/Tests/badge.svg)](https://github.com/Uniswap/uniswap-interface/actions?query=workflow%3ATests)
-[![Styled With Prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg)](https://prettier.io/)
+## Deployed at 
+https://app.filswap.org
 
-An open source interface for Uniswap -- a protocol for decentralized exchange of Ethereum tokens.
-
-- Website: [uniswap.org](https://uniswap.org/)
-- Interface: [app.uniswap.org](https://app.uniswap.org)
-- Docs: [uniswap.org/docs/](https://uniswap.org/docs/)
-- Twitter: [@UniswapProtocol](https://twitter.com/UniswapProtocol)
-- Reddit: [/r/Uniswap](https://www.reddit.com/r/Uniswap/)
-- Email: [contact@uniswap.org](mailto:contact@uniswap.org)
-- Discord: [Uniswap](https://discord.gg/FCfyBSbCU5)
-- Whitepaper: [Link](https://hackmd.io/C-DvwDSfSxuh-Gd4WKE_ig)
-
-## Accessing the Uniswap Interface
-
-To access the Uniswap Interface, use an IPFS gateway link from the
-[latest release](https://github.com/Uniswap/uniswap-interface/releases/latest), 
-or visit [app.uniswap.org](https://app.uniswap.org).
-
-## Listing a token
-
-Please see the
-[@uniswap/default-token-list](https://github.com/uniswap/default-token-list) 
-repository.
-
-## Development
-
-### Install Dependencies
-
-```bash
-yarn
-```
-
-### Run
-
-```bash
-yarn start
-```
-
-### Configuring the environment (optional)
-
-To have the interface default to a different network when a wallet is not connected:
-
-1. Make a copy of `.env` named `.env.local`
-2. Change `REACT_APP_NETWORK_ID` to `"{YOUR_NETWORK_ID}"`
-3. Change `REACT_APP_NETWORK_URL` to e.g. `"https://{YOUR_NETWORK_ID}.infura.io/v3/{YOUR_INFURA_KEY}"` 
-
-Note that the interface only works on testnets where both 
-[Uniswap V2](https://uniswap.org/docs/v2/smart-contracts/factory/) and 
-[multicall](https://github.com/makerdao/multicall) are deployed.
-The interface will not work on other networks.
-
-## Contributions
-
-**Please open all pull requests against the `master` branch.** 
-CI checks will run against all PRs.
-
-## Accessing Uniswap Interface V1
-
-The Uniswap Interface supports swapping against, and migrating or removing liquidity from Uniswap V1. However,
-if you would like to use Uniswap V1, the Uniswap V1 interface for mainnet and testnets is accessible via IPFS gateways 
-linked from the [v1.0.0 release](https://github.com/Uniswap/uniswap-interface/releases/tag/v1.0.0).
+## Project Submission Link
+https://ethglobal.com/showcase/filswap-8hn40
