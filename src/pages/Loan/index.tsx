@@ -45,7 +45,7 @@ import { useContractDataCallback, useLendAmountCallback, useLenderAmountCallback
 import styled from 'styled-components'
 import { darken } from 'polished'
 import { Input as NumericalInput } from '../../components/LoanInput'
-import { hexlify, parseEther } from 'ethers/lib/utils'
+import { formatEther, hexlify, parseEther } from 'ethers/lib/utils'
 import loanAbi from '../../constants/abis/loan-rewarder.json'
 import gargantuaAbi from '../../constants/abis/gargantuaErc20.json'
 
@@ -323,12 +323,21 @@ export default function Loan({
     console.log('lenderData Called : ', lenderData)
     const lendedAmount = parseInt(lenderData[0]._hex)
     const lendPool = parseInt(lenderData[1]._hex)
+    const loanPool = parseInt(lenderData[2]._hex)
     const totalInterestAmount = await loanContract.totalInterestAmount()
     console.log('totalInterestAmount Called : ', totalInterestAmount)
     const sharePercent = (lendedAmount * 100) / lendPool
-    const interest = (sharePercent * totalInterestAmount) / 100
-    console.log('sharePercent and interest: ', sharePercent, interest)
-    const tx = await loanContract.revokeLend(interest, parseEther(lendValue))
+    const interest = (sharePercent * parseInt(totalInterestAmount._hex)) / 100
+    console.log(
+      'sharePercent and interest: ',
+      sharePercent,
+      interest,
+      lendValue,
+      formatEther(interest.toString()),
+      lendPool,
+      loanPool
+    )
+    const tx = await loanContract.revokeLend(parseEther(formatEther(interest.toString())), parseEther(lendValue))
     await tx.wait()
     console.log('Revoke successful!')
   }
