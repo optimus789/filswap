@@ -3,6 +3,3 @@ FilSwap is a decentralized finance (DeFi) platform that provides a suite of fina
 
 ## Deployed at 
 https://app.filswap.org
-
-## Project Submission Link
-https://ethglobal.com/showcase/filswap-8hn40
